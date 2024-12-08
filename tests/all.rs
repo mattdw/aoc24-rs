@@ -23,3 +23,4 @@ macro_rules! check {
 
 check!(day1, Day1, 2904518, 18650129);
 check!(day7, Day7, 7710205485870, 20928985450275);
+check!(day8, Day8, 252, 839);

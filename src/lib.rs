@@ -4,6 +4,9 @@ pub use day1::Day1;
 mod day7;
 pub use day7::Day7;
 
+mod day8;
+pub use day8::Day8;
+
 use std::{env, fmt::Debug};
 
 use reqwest::header::COOKIE;
