@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use crate::Day;
 
 pub struct Day8 {
-    map: HashMap<char, Vec<(isize, isize)>>,
-    width: isize,
-    height: isize,
+    map: HashMap<char, Vec<(i32, i32)>>,
+    width: i32,
+    height: i32,
 }
 
 fn parse(input: &str) -> Day8 {
@@ -23,7 +23,7 @@ fn parse(input: &str) -> Day8 {
                 out.insert(c, vec![]);
             }
             let v = out.get_mut(&c).expect("we just inserted it");
-            v.push((x as isize, y as isize));
+            v.push((x as i32, y as i32));
         }
         height = y + 1;
     }
@@ -32,12 +32,12 @@ fn parse(input: &str) -> Day8 {
 
     Day8 {
         map: out,
-        height: height as isize,
-        width: width as isize,
+        height: height as i32,
+        width: width as i32,
     }
 }
 
-fn all_pairs(locs: &Vec<(isize, isize)>) -> Vec<((isize, isize), (isize, isize))> {
+fn all_pairs(locs: &Vec<(i32, i32)>) -> Vec<((i32, i32), (i32, i32))> {
     let mut outs = vec![];
     for left in locs.iter() {
         for right in locs.iter() {
@@ -50,18 +50,14 @@ fn all_pairs(locs: &Vec<(isize, isize)>) -> Vec<((isize, isize), (isize, isize))
     outs
 }
 
-fn antinode_pos(left: (isize, isize), right: (isize, isize)) -> (isize, isize) {
+fn antinode_pos(left: (i32, i32), right: (i32, i32)) -> (i32, i32) {
     let dx = right.0 - left.0;
     let dy = right.1 - left.1;
 
     (right.0 + dx, right.1 + dy)
 }
 
-fn antinode_positions_part2(
-    d: &Day8,
-    left: (isize, isize),
-    right: (isize, isize),
-) -> Vec<(isize, isize)> {
+fn antinode_positions_part2(d: &Day8, left: (i32, i32), right: (i32, i32)) -> Vec<(i32, i32)> {
     let mut dx = right.0 - left.0;
     let mut dy = right.1 - left.1;
 
@@ -84,11 +80,11 @@ fn antinode_positions_part2(
     outs
 }
 
-fn in_bounds(d: &Day8, pt: &(isize, isize)) -> bool {
+fn in_bounds(d: &Day8, pt: &(i32, i32)) -> bool {
     pt.0 >= 0 && pt.0 < d.width && pt.1 >= 0 && pt.1 < d.height
 }
 
-fn gcd(a: isize, b: isize) -> isize {
+fn gcd(a: i32, b: i32) -> i32 {
     let mut a = a;
     let mut b = b;
     while b != 0 {
@@ -100,7 +96,7 @@ fn gcd(a: isize, b: isize) -> isize {
 }
 
 #[allow(dead_code)]
-fn print_locs(d: &Day8, map: &HashMap<(isize, isize), char>) {
+fn print_locs(d: &Day8, map: &HashMap<(i32, i32), char>) {
     for y in 0..d.height {
         for x in 0..d.width {
             print!("{}", map.get(&(x, y)).unwrap_or(&'.'));
@@ -109,11 +105,11 @@ fn print_locs(d: &Day8, map: &HashMap<(isize, isize), char>) {
     }
 }
 
-impl Day<isize> for Day8 {
-    fn part1(input: &str) -> isize {
+impl Day<i32> for Day8 {
+    fn part1(input: &str) -> i32 {
         let info = parse(input);
 
-        let mut antinodes = HashMap::<(isize, isize), char>::new();
+        let mut antinodes = HashMap::<(i32, i32), char>::new();
         for (freq, locs) in info.map.iter() {
             for (left, right) in all_pairs(locs) {
                 // println!("{:?} -> {:?}", left, right);
@@ -128,13 +124,13 @@ impl Day<isize> for Day8 {
         // dbg!(&antinodes);
         // println!("w {} h {}", &info.width, &info.height);
 
-        antinodes.keys().count() as isize
+        antinodes.keys().count() as i32
     }
 
-    fn part2(input: &str) -> isize {
+    fn part2(input: &str) -> i32 {
         let info = parse(input);
 
-        let mut antinodes = HashMap::<(isize, isize), char>::new();
+        let mut antinodes = HashMap::<(i32, i32), char>::new();
 
         for (freq, locs) in info.map.iter() {
             for (left, right) in all_pairs(locs) {
@@ -150,7 +146,7 @@ impl Day<isize> for Day8 {
         // dbg!(&antinodes);
         // println!("w {} h {}", &info.width, &info.height);
 
-        antinodes.keys().count() as isize
+        antinodes.keys().count() as i32
     }
 }
 

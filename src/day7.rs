@@ -5,7 +5,7 @@ use crate::Day;
 
 pub struct Day7 {}
 
-fn parse(input: &str) -> Vec<(isize, Vec<isize>)> {
+fn parse(input: &str) -> Vec<(i64, Vec<i64>)> {
     input
         .trim()
         .lines()
@@ -29,7 +29,7 @@ fn mul<T: Mul>(a: T, b: T) -> <T as Mul>::Output {
     a * b
 }
 
-fn concat(a: isize, b: isize) -> isize {
+fn concat(a: i64, b: i64) -> i64 {
     // Here's the naive version as formulated
     // format!("{a}{b}").parse().expect("is a number")
 
@@ -42,11 +42,7 @@ fn concat(a: isize, b: isize) -> isize {
     return a * mag + b;
 }
 
-fn count_solutions(
-    answer: isize,
-    operands: &[isize],
-    operators: &[fn(isize, isize) -> isize],
-) -> usize {
+fn count_solutions(answer: i64, operands: &[i64], operators: &[fn(i64, i64) -> i64]) -> usize {
     operands
         .into_iter()
         .fold(vec![], |poss, &operand| {
@@ -73,12 +69,12 @@ fn count_solutions(
         .count()
 }
 
-impl Day<isize> for Day7 {
-    fn part1(input: &str) -> isize {
+impl Day<i64> for Day7 {
+    fn part1(input: &str) -> i64 {
         let mut sum = 0;
 
         for (answer, operands) in parse(input) {
-            if count_solutions(answer, &operands, &[add::<isize>, mul::<isize>]) > 0 {
+            if count_solutions(answer, &operands, &[add::<i64>, mul::<i64>]) > 0 {
                 sum += answer
             }
         }
@@ -86,11 +82,11 @@ impl Day<isize> for Day7 {
         sum
     }
 
-    fn part2(input: &str) -> isize {
+    fn part2(input: &str) -> i64 {
         // let mut sum = 0;
 
         // for (answer, operands) in parse(input) {
-        //     if count_solutions(answer, &operands, &[add::<isize>, mul::<isize>, concat]) > 0 {
+        //     if count_solutions(answer, &operands, &[add::<i64>, mul::<i64>, concat]) > 0 {
         //         sum += answer
         //     }
         // }
@@ -100,7 +96,7 @@ impl Day<isize> for Day7 {
         parse(input)
             .into_iter()
             .map(|(answer, operands)| {
-                if count_solutions(answer, &operands, &[add::<isize>, mul::<isize>, concat]) > 0 {
+                if count_solutions(answer, &operands, &[add::<i64>, mul::<i64>, concat]) > 0 {
                     answer
                 } else {
                     0

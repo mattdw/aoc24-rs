@@ -4,8 +4,8 @@ use crate::Day;
 
 pub struct Day1 {}
 
-impl Day<isize> for Day1 {
-    fn part1(input: &str) -> isize {
+impl Day<i32> for Day1 {
+    fn part1(input: &str) -> i32 {
         let (left, right) = parse(input);
 
         let mut sum = 0;
@@ -19,7 +19,7 @@ impl Day<isize> for Day1 {
         sum
     }
 
-    fn part2(input: &str) -> isize {
+    fn part2(input: &str) -> i32 {
         let (left, right) = parse(input);
 
         let freqs = right.iter().fold(HashMap::new(), |mut acc, v| {
@@ -36,12 +36,12 @@ impl Day<isize> for Day1 {
     }
 }
 
-fn parse(input: &str) -> (Vec<isize>, Vec<isize>) {
+fn parse(input: &str) -> (Vec<i32>, Vec<i32>) {
     let mut a = vec![];
     let mut b = vec![];
 
     input.trim().lines().for_each(|line| {
-        let ns: Vec<isize> = line
+        let ns: Vec<i32> = line
             .trim()
             .split_ascii_whitespace()
             .map(|n| n.parse().expect("is a number"))
