@@ -17,6 +17,7 @@ pub trait Day<T: Debug + Eq> {
 }
 
 pub async fn fetch_input(day: u8) -> Result<String, anyhow::Error> {
+    let _ = tokio::fs::create_dir("inputs").await;
     let existing = tokio::fs::read_to_string(format!("inputs/{day}.txt")).await;
 
     match existing {
@@ -24,7 +25,7 @@ pub async fn fetch_input(day: u8) -> Result<String, anyhow::Error> {
         Err(_) => (),
     }
 
-    let session = env::var("SESSION")?;
+    let session = env::var("SESSION").expect("SESSION env var is required to fetch input");
     let client = reqwest::Client::new();
     let resp = client
         .get(format!("https://adventofcode.com/2024/day/{day}/input"))
