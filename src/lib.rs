@@ -10,6 +10,9 @@ pub use day8::Day8;
 mod day9;
 pub use day9::Day9;
 
+mod day10;
+pub use day10::Day10;
+
 use std::{env, fmt::Debug};
 
 use reqwest::header::COOKIE;

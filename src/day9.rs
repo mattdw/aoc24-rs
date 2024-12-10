@@ -123,6 +123,8 @@ fn checksum2(disk: &[Packet]) -> u64 {
             let mut idx_by = 0;
             let mut sum_by = 0;
             match name {
+                // we need to keep track of skipped block positions
+                // so our index is continuous and correct
                 None => {
                     return (sum, idx + len);
                 }
