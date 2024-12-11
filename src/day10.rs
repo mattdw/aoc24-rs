@@ -139,6 +139,7 @@ fn solve_a(m: &Map) -> i64 {
     count
 }
 
+
 fn solve_b(m: &Map) -> i64 {
     let mut counts: Vec<_> = m
         .cells
@@ -151,7 +152,7 @@ fn solve_b(m: &Map) -> i64 {
             if m.get(p).unwrap() != (i - 1) {
                 continue;
             }
-            counts[m.pt_to_idx(p)] = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+            let iter = [(-1, 0), (1, 0), (0, -1), (0, 1)]
                 .iter()
                 .map(|(dx, dy)| {
                     let co = (p.0 + dx, p.1 + dy);
@@ -161,8 +162,9 @@ fn solve_b(m: &Map) -> i64 {
                     } else {
                         0
                     }
-                })
-                .sum();
+                });
+
+            counts[m.pt_to_idx(p)] = iter.sum();
         }
     }
 

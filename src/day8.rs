@@ -9,7 +9,7 @@ pub struct Day8 {
 }
 
 fn parse(input: &str) -> Day8 {
-    let mut out = HashMap::new();
+    let mut out: HashMap<char, Vec<(i32, i32)>> = HashMap::new();
 
     let mut width: usize = 0;
     let mut height: usize = 0;
@@ -19,10 +19,14 @@ fn parse(input: &str) -> Day8 {
             if c == '.' {
                 continue;
             }
-            if !out.contains_key(&c) {
-                out.insert(c, vec![]);
-            }
-            let v = out.get_mut(&c).expect("we just inserted it");
+
+            // if !out.contains_key(&c) {
+            //     out.insert(c, vec![]);
+            // }
+            // let v = out.get_mut(&c).expect("we just inserted it");
+
+            // could also .or_insert_with(|| vec![]);
+            let v = out.entry(c).or_default();
             v.push((x as i32, y as i32));
         }
         height = y + 1;
