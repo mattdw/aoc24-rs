@@ -7,3 +7,9 @@ edition = "2021"
 anyhow = "1.0.94"
 reqwest = "0.12.9"
 tokio = { version = "1.42.0", features = ["full"] }
+
+[profile.dev]
+debug = "full"
+
+[profile.release]
+debug = "full"
