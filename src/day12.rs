@@ -18,7 +18,7 @@ struct Map {
 
 fn parse(input: &str) -> Map {
     let mut charmap = HashMap::<Co, char>::new();
-    let regionmap = HashMap::<Co, i64>::new();
+    let mut regionmap = HashMap::<Co, i64>::new();
     let mut revmap = HashMap::<i64, HashSet<Co>>::new();
     let mut region_id: i64 = 0;
     let mut fencemap = HashMap::<Co, i64>::new();
@@ -92,7 +92,11 @@ fn parse(input: &str) -> Map {
         revmap.insert(next_id(), region_cos);
     }
 
-    // println!("{:?}", revmap);
+    for (r, rs) in revmap.iter() {
+        for co in rs.iter() {
+            regionmap.insert(*co, *r);
+        }
+    }
 
     Map {
         data: regionmap,
@@ -115,6 +119,60 @@ fn score1(map: &Map) -> i64 {
         .sum()
 }
 
+fn count_internal_corners(map: &Map, co: &Co, id: i64) -> i64 {
+    [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+        .iter()
+        .map(|(dx, dy)| {
+            let side_offs = [(*dx, 0), (0, *dy)];
+            let sides = side_offs
+                .iter()
+                .map(|(dx, dy)| map.data.get(&Co(co.0 + *dx, co.1 + *dy)))
+                .collect::<Vec<_>>();
+            // eprintln!("{sides:?}");
+            if sides.iter().any(|&v| v != Some(&id)) {
+                return 0;
+            }
+            let otherco = Co(co.0 + dx, co.1 + dy);
+            if let Some(other_id) = map.data.get(&otherco) {
+                if *other_id != id {
+                    eprintln!("{otherco:?} is internal corner to {co:?}");
+                    1
+                } else {
+                    0
+                }
+            } else {
+                // out-of-bounds is never an internal corner
+                0
+            }
+        })
+        .sum()
+}
+
+fn count_corners(map: &Map, co: &Co, id: i64) -> i64 {
+    let fences = map.fences.get(co).expect("has a score");
+    let base_count = match fences {
+        4 => 4,
+        3 => 2,
+        2 => 1,
+        1 => 0,
+        0 => 0,
+        _ => unreachable!("{fences} score??"),
+    };
+    base_count + count_internal_corners(map, co, id)
+}
+
+fn score2(map: &Map) -> i64 {
+    map.regions
+        .iter()
+        .map(|(id, cos)| {
+            let area = cos.len() as i64;
+            let corner_count: i64 = cos.iter().map(|co| count_corners(&map, co, *id)).sum();
+            eprintln!("ID {id}: {area} * {corner_count}");
+            dbg!(area * corner_count)
+        })
+        .sum()
+}
+
 pub struct Day12 {}
 
 impl Day<i64> for Day12 {
@@ -123,13 +181,12 @@ impl Day<i64> for Day12 {
     }
 
     fn part2(input: &str) -> i64 {
-        0
+        score2(&parse(input))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::day12::score1;
 
     const TEST_INPUT: &'static str = "
     AAAA
@@ -173,12 +230,24 @@ mod test {
     #[test]
     fn score_small() {
         let r = super::parse(TEST_INPUT);
-        assert_eq!(140, score1(&r));
+        assert_eq!(140, super::score1(&r));
     }
 
     #[test]
     fn score_larger() {
         let r = super::parse(TEST_INPUT_LARGER);
-        assert_eq!(1930, score1(&r));
+        assert_eq!(1930, super::score1(&r));
+    }
+
+    #[test]
+    fn score2_small() {
+        let r = super::parse(TEST_INPUT);
+        assert_eq!(80, super::score2(&r));
+    }
+
+    #[test]
+    fn score2() {
+        let r = super::parse(TEST_INPUT_LARGER);
+        assert_eq!(1206, super::score2(&r));
     }
 }
