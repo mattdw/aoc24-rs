@@ -11,7 +11,7 @@ fn parse(input: &str) -> Vec<(i64, Vec<i64>)> {
         .lines()
         .map(|line| {
             let (a, bs) = line.trim().split_once(':').expect("has a colon");
-            let bs = bs.trim().split_whitespace();
+            let bs = bs.split_whitespace();
 
             (
                 a.parse().expect("is a number"),
@@ -39,15 +39,16 @@ fn concat(a: i64, b: i64) -> i64 {
     while b >= mag {
         mag *= 10;
     }
-    return a * mag + b;
+
+    a * mag + b
 }
 
 fn count_solutions(answer: i64, operands: &[i64], operators: &[fn(i64, i64) -> i64]) -> usize {
     operands
-        .into_iter()
+        .iter()
         .fold(vec![], |poss, &operand| {
             let mut new_poss = vec![];
-            if poss.len() == 0 {
+            if poss.is_empty() {
                 new_poss.push(operand)
             } else {
                 for operator in operators {

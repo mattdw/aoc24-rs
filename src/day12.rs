@@ -135,7 +135,7 @@ fn count_internal_corners(map: &Map, co: &Co, id: i64) -> i64 {
             let otherco = Co(co.0 + dx, co.1 + dy);
             if let Some(other_id) = map.data.get(&otherco) {
                 if *other_id != id {
-                    eprintln!("{otherco:?} is internal corner to {co:?}");
+                    // eprintln!("{otherco:?} is internal corner to {co:?}");
                     1
                 } else {
                     0
@@ -148,17 +148,38 @@ fn count_internal_corners(map: &Map, co: &Co, id: i64) -> i64 {
         .sum()
 }
 
+fn fences_opposite(map: &Map, co: &Co, id: i64) -> bool {
+    // eprintln!("checking opposite fences for {co:?}");
+    let sides = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+    let ids = sides
+        .iter()
+        .map(|(dx, dy)| map.data.get(&Co(co.0 + dx, co.1 + dy)))
+        .collect::<Vec<_>>();
+
+    let me = Some(&id);
+    if (ids[0] == me && ids[1] == me) || (ids[2] == me && ids[3] == me) {
+        true
+    } else {
+        false
+    }
+}
+
 fn count_corners(map: &Map, co: &Co, id: i64) -> i64 {
     let fences = map.fences.get(co).expect("has a score");
-    let base_count = match fences {
+    match fences {
         4 => 4,
         3 => 2,
-        2 => 1,
-        1 => 0,
-        0 => 0,
+        2 => {
+            if dbg!(fences_opposite(map, co, id)) {
+                0
+            } else {
+                1 + count_internal_corners(map, co, id)
+            }
+        }
+        1 => count_internal_corners(map, co, id),
+        0 => count_internal_corners(map, co, id),
         _ => unreachable!("{fences} score??"),
-    };
-    base_count + count_internal_corners(map, co, id)
+    }
 }
 
 fn score2(map: &Map) -> i64 {
@@ -167,8 +188,8 @@ fn score2(map: &Map) -> i64 {
         .map(|(id, cos)| {
             let area = cos.len() as i64;
             let corner_count: i64 = cos.iter().map(|co| count_corners(&map, co, *id)).sum();
-            eprintln!("ID {id}: {area} * {corner_count}");
-            dbg!(area * corner_count)
+            // eprintln!("ID {id}: {area} * {corner_count}");
+            area * corner_count
         })
         .sum()
 }
@@ -249,5 +270,29 @@ mod test {
     fn score2() {
         let r = super::parse(TEST_INPUT_LARGER);
         assert_eq!(1206, super::score2(&r));
+    }
+
+    #[test]
+    fn score2_tiny() {
+        let p = super::parse(
+            "
+        .C
+        CC
+        C.
+        ",
+        );
+
+        assert_eq!(32 + 4 + 4, super::score2(&p));
+    }
+
+    #[test]
+    fn score2_block() {
+        let p = super::parse(
+            "
+        EEE
+        ",
+        );
+
+        assert_eq!(12, super::score2(&p));
     }
 }

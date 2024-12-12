@@ -1,14 +1,17 @@
-mod day1;
-pub use day1::Day1;
+mod day01;
+pub use day01::Day1;
 
-mod day7;
-pub use day7::Day7;
+mod day02;
+pub use day02::Day2;
 
-mod day8;
-pub use day8::Day8;
+mod day07;
+pub use day07::Day7;
 
-mod day9;
-pub use day9::Day9;
+mod day08;
+pub use day08::Day8;
+
+mod day09;
+pub use day09::Day9;
 
 mod day10;
 pub use day10::Day10;
@@ -32,9 +35,8 @@ pub async fn fetch_input(day: u8) -> Result<String, anyhow::Error> {
     let _ = tokio::fs::create_dir("inputs").await;
     let existing = tokio::fs::read_to_string(format!("inputs/{day}.txt")).await;
 
-    match existing {
-        Ok(s) => return Ok(s),
-        Err(_) => (),
+    if let Ok(s) = existing {
+        return Ok(s);
     }
 
     let session = env::var("SESSION").expect("SESSION env var is required to fetch input");

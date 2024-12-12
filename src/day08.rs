@@ -41,7 +41,7 @@ fn parse(input: &str) -> Day8 {
     }
 }
 
-fn all_pairs(locs: &Vec<(i32, i32)>) -> Vec<((i32, i32), (i32, i32))> {
+fn all_pairs(locs: &[(i32, i32)]) -> Vec<((i32, i32), (i32, i32))> {
     let mut outs = vec![];
     for left in locs.iter() {
         for right in locs.iter() {

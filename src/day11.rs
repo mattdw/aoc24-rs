@@ -86,12 +86,12 @@ fn count_splits(s: Stone, depth: u64, cache: &mut HashMap<(Stone, u64), u64>) ->
 
     let out = count_splits(s * 2024, depth - 1, cache);
     cache.insert((s, depth), out);
-    return out;
+
+    out
 }
 
 fn parse(input: &str) -> Vec<Stone> {
     input
-        .trim()
         .split_whitespace()
         .map(|n| {
             n.parse::<Stone>()
@@ -100,29 +100,29 @@ fn parse(input: &str) -> Vec<Stone> {
         .collect()
 }
 
-impl Day<i64> for Day11 {
-    fn part1(input: &str) -> i64 {
+impl Day<u64> for Day11 {
+    fn part1(input: &str) -> u64 {
         let v = parse(input);
         let mut cache = HashMap::new();
         let sum: u64 = v
             .into_iter()
             .map(|val| count_splits(val, 25, &mut cache))
             .sum();
-        // v.len() as i64
+        // v.len() as u64
         // println!("{} vals cached", cache.len());
-        sum as i64
+        sum
     }
 
-    fn part2(input: &str) -> i64 {
+    fn part2(input: &str) -> u64 {
         let v = parse(input);
         let mut cache = HashMap::new();
         let sum: u64 = v
             .into_iter()
             .map(|val| count_splits(val, 75, &mut cache))
             .sum();
-        // v.len() as i64
+        // v.len() as u64
         // println!("{} vals cached", cache.len());
-        sum as i64
+        sum
     }
 }
 

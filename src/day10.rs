@@ -80,7 +80,7 @@ fn reachable(m: &Map, zero: Pt, nine: Pt) -> bool {
     let mut open = std::collections::HashSet::new();
     open.insert(zero);
 
-    while open.len() > 0 {
+    while !open.is_empty() {
         let curr = *open.iter().take(1).collect::<Vec<_>>()[0];
         open.remove(&curr);
         if curr == nine {
@@ -139,7 +139,6 @@ fn solve_a(m: &Map) -> i64 {
     count
 }
 
-
 fn solve_b(m: &Map) -> i64 {
     let mut counts: Vec<_> = m
         .cells
@@ -152,17 +151,15 @@ fn solve_b(m: &Map) -> i64 {
             if m.get(p).unwrap() != (i - 1) {
                 continue;
             }
-            let iter = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                .iter()
-                .map(|(dx, dy)| {
-                    let co = (p.0 + dx, p.1 + dy);
-                    if m.get(co) == Some(i) {
-                        let idx = m.pt_to_idx(co);
-                        counts[idx]
-                    } else {
-                        0
-                    }
-                });
+            let iter = [(-1, 0), (1, 0), (0, -1), (0, 1)].iter().map(|(dx, dy)| {
+                let co = (p.0 + dx, p.1 + dy);
+                if m.get(co) == Some(i) {
+                    let idx = m.pt_to_idx(co);
+                    counts[idx]
+                } else {
+                    0
+                }
+            });
 
             counts[m.pt_to_idx(p)] = iter.sum();
         }

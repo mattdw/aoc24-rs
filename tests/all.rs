@@ -21,10 +21,12 @@ macro_rules! check {
     };
 }
 
-check!(day1, Day1, 2904518, 18650129);
-check!(day7, Day7, 7710205485870, 20928985450275);
-check!(day8, Day8, 252, 839);
-check!(day9, Day9, 6446899523367, 6478232739671);
+check!(day01, Day1, 2904518, 18650129);
+check!(day02, Day2, 236, 308);
+
+check!(day07, Day7, 7710205485870, 20928985450275);
+check!(day08, Day8, 252, 839);
+check!(day09, Day9, 6446899523367, 6478232739671);
 check!(day10, Day10, 535, 1186);
 check!(day11, Day11, 186996, 221683913164898);
-check!(day12, Day12, -1, -1);
+check!(day12, Day12, 1477762, 923480);

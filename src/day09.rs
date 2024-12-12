@@ -64,10 +64,10 @@ fn repack(mut disk: Vec<Packet>) -> Vec<Packet> {
 }
 
 fn checksum(disk: &[Packet]) -> u64 {
-    disk.into_iter()
+    disk.iter()
         .filter(|&(len, _)| *len > 0)
         .take_while(|&(len, name)| name.is_some() || *len == 0)
-        .fold((0 as u64, 0 as u64), |(sum, idx), (len, name)| {
+        .fold((0_u64, 0_u64), |(sum, idx), (len, name)| {
             let mut idx_by = 0;
             let mut sum_by = 0;
             for offset in 0..*len {
@@ -117,24 +117,22 @@ fn repack2(mut disk: Vec<Packet>) -> Vec<Packet> {
 }
 
 fn checksum2(disk: &[Packet]) -> u64 {
-    disk.into_iter()
+    disk.iter()
         .filter(|&(len, _)| *len > 0)
-        .fold((0 as u64, 0 as u64), |(sum, idx), (len, name)| {
+        .fold((0_u64, 0_u64), |(sum, idx), (len, name)| {
             let mut idx_by = 0;
             let mut sum_by = 0;
             match name {
                 // we need to keep track of skipped block positions
                 // so our index is continuous and correct
-                None => {
-                    return (sum, idx + len);
-                }
+                None => (sum, idx + len),
                 Some(name) => {
                     for offset in 0..*len {
                         sum_by += (idx + offset) * name;
                         idx_by += 1;
                     }
 
-                    return (sum + sum_by, idx + idx_by);
+                    (sum + sum_by, idx + idx_by)
                 }
             }
         })
