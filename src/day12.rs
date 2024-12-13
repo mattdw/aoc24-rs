@@ -83,7 +83,6 @@ fn parse(input: &str) -> Map {
                     } else {
                         q.push_back(co2);
                     }
-                } else {
                 }
             }
             fencemap.insert(co, fences);
@@ -112,7 +111,7 @@ fn score1(map: &Map) -> i64 {
         .values()
         .map(|cos| {
             cos.iter()
-                .map(|co| map.fences.get(&co).unwrap())
+                .map(|co| map.fences.get(co).unwrap())
                 .sum::<i64>()
                 * cos.len() as i64
         })
@@ -157,13 +156,8 @@ fn fences_opposite(map: &Map, co: &Co, id: i64) -> bool {
         .collect::<Vec<_>>();
 
     let me = Some(&id);
-    if (ids[0] == me && ids[1] == me) || (ids[2] == me && ids[3] == me) {
-        true
-    } else {
-        false
-    }
+    (ids[0] == me && ids[1] == me) || (ids[2] == me && ids[3] == me)
 }
-
 fn count_corners(map: &Map, co: &Co, id: i64) -> i64 {
     let fences = map.fences.get(co).expect("has a score");
     match fences {
@@ -187,7 +181,7 @@ fn score2(map: &Map) -> i64 {
         .iter()
         .map(|(id, cos)| {
             let area = cos.len() as i64;
-            let corner_count: i64 = cos.iter().map(|co| count_corners(&map, co, *id)).sum();
+            let corner_count: i64 = cos.iter().map(|co| count_corners(map, co, *id)).sum();
             // eprintln!("ID {id}: {area} * {corner_count}");
             area * corner_count
         })

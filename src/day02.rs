@@ -18,7 +18,7 @@ fn pairs<'a, T>(i: &'a [T]) -> impl Iterator<Item = (&'a T, &'a T)> {
 
 fn report_is_safe(r: &[i8]) -> bool {
     let mut increasing: Option<bool> = None;
-    for (a, b) in pairs(&r) {
+    for (a, b) in pairs(r) {
         let diff = a - b;
         let sign = diff.signum() < 0;
 
@@ -45,7 +45,7 @@ struct DroppingOne<'a> {
     curr: usize,
 }
 
-impl<'a> Iterator for DroppingOne<'a> {
+impl Iterator for DroppingOne<'_> {
     type Item = Vec<i8>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -63,7 +63,7 @@ impl<'a> Iterator for DroppingOne<'a> {
     }
 }
 
-fn dropping_one<'a>(r: &'a [i8]) -> DroppingOne<'a> {
+fn dropping_one(r: &[i8]) -> DroppingOne {
     DroppingOne { slice: r, curr: 0 }
 }
 
@@ -77,7 +77,7 @@ impl Day<usize> for Day2 {
     fn part2(input: &str) -> usize {
         parse(input)
             .into_iter()
-            .filter(|r| dropping_one(&r).any(|r| report_is_safe(&r)))
+            .filter(|r| dropping_one(r).any(|r| report_is_safe(&r)))
             .count()
     }
 }
