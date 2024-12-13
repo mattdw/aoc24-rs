@@ -58,6 +58,33 @@ fn parse(input: &str) -> Vec<Machine> {
         .collect()
 }
 
+fn solve_machine(machine: &Machine, offset: Vector2<i64>) -> Option<Vector2<i64>> {
+    let prize = machine.prize + offset;
+    let ax = machine.buttons[0];
+    let bx = machine.buttons[2];
+    let ay = machine.buttons[1];
+    let by = machine.buttons[3];
+
+    // I knew I needed an analytical solution, but had a devil of a time
+    // finding it.
+    //
+    // It's the 'cross-multiplication method' for solving linear equations
+    // of two variables.
+
+    let na = (by * prize.x - bx * prize.y) / (by * ax - bx * ay);
+    let nb = (ay * prize.x - ax * prize.y) / (ay * bx - ax * by);
+
+    let x = na * ax + nb * bx;
+    let y = na * ay + nb * by;
+
+    if x == prize.x && y == prize.y {
+        // println!("{:?} {:?}", na, nb);
+        Some(Vector2::new(na, nb))
+    } else {
+        None
+    }
+}
+
 pub struct Day13 {}
 
 impl Day<i64> for Day13 {
@@ -65,21 +92,30 @@ impl Day<i64> for Day13 {
         let machines = parse(input);
 
         let mut winnable: Vec<(Machine, Vector2<i64>)> = vec![];
-        'machine: for machine in machines {
-            for a in 0..=100 {
-                for b in 0..=100 {
-                    let v = Vector2::new(a, b);
-                    let res = machine.buttons * v;
-                    if res == machine.prize {
-                        winnable.push((machine, v));
-                        println!("{:?}", v);
-                        continue 'machine;
-                    }
-                    if res.x > machine.prize.x && res.y > machine.prize.y {
-                        break;
-                    }
+        for machine in machines {
+            match solve_machine(&machine, Vector2::zeros()) {
+                Some(v) => {
+                    winnable.push((machine, v));
                 }
+                None => {}
             }
+
+            // This worked, but at about 50x runtime.
+            //
+            // for a in 0..=100 {
+            //     for b in 0..=100 {
+            //         let v = Vector2::new(a, b);
+            //         let res = machine.buttons * v;
+            //         if res == machine.prize {
+            //             winnable.push((machine, v));
+            //             println!("{:?}", v);
+            //             continue 'machine;
+            //         }
+            //         if res.x > machine.prize.x && res.y > machine.prize.y {
+            //             break;
+            //         }
+            //     }
+            // }
         }
 
         winnable
@@ -94,28 +130,12 @@ impl Day<i64> for Day13 {
 
         let mut winnable: Vec<(Machine, Vector2<i64>)> = vec![];
         for machine in machines {
-            let prize = machine.prize + offset;
-            let ax = machine.buttons[0];
-            let bx = machine.buttons[2];
-            let ay = machine.buttons[1];
-            let by = machine.buttons[3];
-
-            // I knew I needed an analytical solution, but had a devil of a time
-            // finding it.
-            //
-            // It's the 'cross-multiplication method' for solving linear equations
-            // of two variables.
-
-            let na = (by * prize.x - bx * prize.y) / (by * ax - bx * ay);
-            let nb = (ay * prize.x - ax * prize.y) / (ay * bx - ax * by);
-
-            let x = na * ax + nb * bx;
-            let y = na * ay + nb * by;
-
-            if x == prize.x && y == prize.y {
-                // println!("{:?} {:?}", na, nb);
-                winnable.push((machine, Vector2::new(na, nb)));
-            };
+            match solve_machine(&machine, offset) {
+                Some(v) => {
+                    winnable.push((machine, v));
+                }
+                None => {}
+            }
         }
 
         winnable
