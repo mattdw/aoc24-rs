@@ -64,30 +64,53 @@ fn quadrant(r: &Robot, world_size: (i64, i64)) -> Option<i64> {
 }
 
 fn has_span(rs: &Vec<Robot>, world_size: (i64, i64), threshold: i64) -> bool {
-    use std::collections::HashSet;
-    let mut map = HashSet::<Vector2<i64>>::new();
-    for r in rs {
-        map.insert(r.p);
-    }
+    let mut sorted = rs.clone();
+    sorted.sort_by_cached_key(|r| r.p.y * world_size.0 + r.p.x);
+    let diffs = sorted.iter().zip(sorted.iter().skip(1)).map(|(a, b)| {
+        let dxy = (a.p - b.p).abs();
+        dxy.y * world_size.0 + dxy.x
+    });
 
-    let mut current_span = 0;
+    let mut span = 0;
 
-    for y in 0..world_size.1 {
-        for x in 0..world_size.0 {
-            if map.contains(&Vector2::new(x, y)) {
-                current_span += 1;
-                if current_span > threshold {
-                    return true;
-                }
-            } else {
-                current_span = 0;
-            };
+    for d in diffs {
+        if d == 1 {
+            span += 1;
+            if span >= threshold {
+                return true;
+            }
+        } else {
+            span = 0;
         }
     }
 
     false
+
+    // use std::collections::HashSet;
+    // let mut map = HashSet::<Vector2<i64>>::new();
+    // for r in rs {
+    //     map.insert(r.p);
+    // }
+
+    // let mut current_span = 0;
+
+    // for y in 0..world_size.1 {
+    //     for x in 0..world_size.0 {
+    //         if map.contains(&Vector2::new(x, y)) {
+    //             current_span += 1;
+    //             if current_span > threshold {
+    //                 return true;
+    //             }
+    //         } else {
+    //             current_span = 0;
+    //         };
+    //     }
+    // }
+
+    // false
 }
 
+#[allow(dead_code)]
 fn print_map(rs: &Vec<Robot>, world_size: (i64, i64), output: bool) -> i64 {
     use std::collections::HashSet;
     let mut map = HashSet::<Vector2<i64>>::new();
@@ -154,9 +177,9 @@ impl Day<i64> for Day14 {
                 }
             }
 
-            println!("tree on {}", steps);
+            // println!("tree on {}", steps);
             if has_span(&rs_, world_size, 10) {
-                print_map(&rs_, world_size, true);
+                // print_map(&rs_, world_size, true);
                 break;
             }
 

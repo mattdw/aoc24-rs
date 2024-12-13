@@ -1,2 +1,5 @@
 [env]
 _.file = '.env'
+
+[tasks.all]
+run = "cargo nextest run --test-threads=1 --test=all --release"
