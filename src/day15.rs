@@ -1,4 +1,7 @@
-use std::{collections::HashMap, convert::identity};
+use std::{
+    collections::{HashMap, VecDeque},
+    convert::identity,
+};
 
 use nalgebra::Vector2;
 
@@ -9,6 +12,8 @@ enum Object {
     Robot,
     Box,
     Wall,
+    BoxLeft,
+    BoxRight,
 }
 
 type Co = Vector2<i64>;
@@ -50,6 +55,46 @@ fn parse(input: &str) -> (Map, Co, Vec<Co>) {
     (map, robotpos, moves)
 }
 
+fn expand_map(map: Map, robot: Co) -> (Map, Co) {
+    let mut new_map = Map::new();
+    let mut new_robot = robot;
+
+    let x1 = Co::new(1, 0);
+    for (mut co, o) in map.into_iter() {
+        co.x *= 2;
+        match o {
+            Object::Robot => {
+                new_map.insert(co, o);
+                new_robot = co;
+            }
+            Object::Wall => {
+                new_map.insert(co, Object::Wall);
+                new_map.insert(co + x1, Object::Wall);
+            }
+            Object::Box => {
+                new_map.insert(co, Object::BoxLeft);
+                new_map.insert(co + x1, Object::BoxRight);
+            }
+            _ => {
+                panic!("can't expand already expanded map");
+            }
+        }
+    }
+
+    (new_map, new_robot)
+}
+
+fn move_to_dir(c: char) -> Option<Co> {
+    match c {
+        '<' => Some(Vector2::new(-1, 0)),
+        '>' => Some(Vector2::new(1, 0)),
+        '^' => Some(Vector2::new(0, -1)),
+        'v' => Some(Vector2::new(0, 1)),
+        '\n' => None,
+        _ => panic!("bad char"),
+    }
+}
+
 fn unoccupied(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
     let mut mult = 1;
     let mut intervening = vec![pos.clone()];
@@ -66,18 +111,8 @@ fn unoccupied(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
             }
             Some(&Object::Wall) => return None,
             None => return Some((new_co, intervening)),
+            _ => panic!(),
         }
-    }
-}
-
-fn move_to_dir(c: char) -> Option<Co> {
-    match c {
-        '<' => Some(Vector2::new(-1, 0)),
-        '>' => Some(Vector2::new(1, 0)),
-        '^' => Some(Vector2::new(0, -1)),
-        'v' => Some(Vector2::new(0, 1)),
-        '\n' => None,
-        _ => panic!("bad char"),
     }
 }
 
@@ -127,6 +162,94 @@ fn make_move(state: (Map, Co, Vec<Co>)) -> (Map, Co, Vec<Co>) {
     (map, robot, moves)
 }
 
+fn map_score_2(map: &Map) -> i64 {
+    map.iter()
+        .map(|(k, v)| match v {
+            Object::BoxLeft => box_score(k),
+            _ => 0,
+        })
+        .sum()
+}
+
+fn unoccupied_2(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
+    let mut intervening = vec![pos.clone()];
+    let mut rays = VecDeque::new();
+    rays.push_back(pos.clone());
+    let x1 = Co::new(1, 0);
+    loop {
+        let Some(pos) = rays.pop_front() else {
+            break;
+        };
+        intervening.push(pos);
+        let new_co = pos + dir;
+
+        let o = map.get(&new_co);
+        match o {
+            Some(Object::Robot) | Some(Object::Box) => {
+                panic!("we shouldn't be here!");
+            }
+            Some(Object::BoxLeft) => {
+                rays.push_back(new_co);
+                if dir.y != 0 {
+                    rays.push_back(new_co + x1);
+                }
+            }
+            Some(Object::BoxRight) => {
+                rays.push_back(new_co);
+                if dir.y != 0 {
+                    rays.push_back(new_co - x1);
+                }
+            }
+            // if we ever hit a wall, we can't move
+            Some(Object::Wall) => return None,
+            None => {}
+            _ => panic!(),
+        }
+    }
+
+    Some((pos.clone(), intervening))
+}
+
+fn make_move_2(state: (Map, Co, Vec<Co>)) -> (Map, Co, Vec<Co>) {
+    let (mut map, mut robot, mut moves) = state;
+    let move_len = moves.len();
+    let Some(next_move) = moves.pop() else {
+        println!("no moves remaining");
+        return (map, robot, vec![]);
+    };
+
+    assert_eq!(map.get(&robot), Some(&Object::Robot));
+
+    // unoccupied needs to branch now, and check for collisions
+    let Some((_unocc, mut intervening)) = unoccupied_2(&map, &robot, &next_move) else {
+        // if we can't make the move, we jump to the next move
+        assert_eq!(moves.len(), move_len - 1);
+        return (map, robot, moves);
+    };
+
+    // assert_eq!(_unocc, intervening.last().unwrap() + next_move);
+
+    // we have to go from the end to not overwrite anything
+    loop {
+        let Some(i) = intervening.pop() else {
+            break;
+        };
+        let nxt_i = i + next_move;
+        let o = map.get(&i);
+        if o == Some(&Object::Robot) {
+            robot = nxt_i;
+        }
+        if let Some(&o) = o {
+            map.insert(nxt_i, o);
+            map.remove(&i);
+        } else {
+            // println!("found blank?");
+        }
+    }
+
+    (map, robot, moves)
+}
+
 pub struct Day15 {}
 
 impl Day<i64> for Day15 {
@@ -142,7 +265,15 @@ impl Day<i64> for Day15 {
     }
 
     fn part2(input: &str) -> i64 {
-        todo!()
+        let mut s = parse(input);
+        (s.0, s.1) = expand_map(s.0, s.1);
+
+        while !&s.2.is_empty() {
+            // println!("{:?} / {:?}", s.1, s.2);
+            s = make_move_2(s);
+        }
+
+        map_score_2(&s.0)
     }
 }
 
@@ -195,5 +326,10 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
     #[test]
     fn end_to_end_small() {
         assert_eq!(2028, Day15::part1(TEST_INPUT_SMALL));
+    }
+
+    #[test]
+    fn part2_t() {
+        assert_eq!(9021, Day15::part2(TEST_INPUT));
     }
 }
