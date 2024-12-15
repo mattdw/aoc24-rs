@@ -63,7 +63,7 @@ fn quadrant(r: &Robot, world_size: (i64, i64)) -> Option<i64> {
     qx.and_then(|vx| qy.map(|vy| vy * 2 + vx))
 }
 
-fn print_map(rs: &Vec<Robot>, world_size: (i64, i64)) -> i64 {
+fn has_span(rs: &Vec<Robot>, world_size: (i64, i64), threshold: i64) -> bool {
     use std::collections::HashSet;
     let mut map = HashSet::<Vector2<i64>>::new();
     for r in rs {
@@ -75,19 +75,50 @@ fn print_map(rs: &Vec<Robot>, world_size: (i64, i64)) -> i64 {
 
     for y in 0..world_size.1 {
         for x in 0..world_size.0 {
-            print!(
-                "{}",
-                if map.contains(&Vector2::new(x, y)) {
-                    current_span += 1;
-                    '#'
-                } else {
-                    longest_span = longest_span.max(current_span);
-                    current_span = 0;
-                    '.'
+            let c = if map.contains(&Vector2::new(x, y)) {
+                current_span += 1;
+                if current_span > threshold {
+                    return true;
                 }
-            );
+                '#'
+            } else {
+                longest_span = longest_span.max(current_span);
+                current_span = 0;
+                '.'
+            };
         }
-        println!();
+    }
+
+    false
+}
+
+fn print_map(rs: &Vec<Robot>, world_size: (i64, i64), output: bool) -> i64 {
+    use std::collections::HashSet;
+    let mut map = HashSet::<Vector2<i64>>::new();
+    for r in rs {
+        map.insert(r.p);
+    }
+
+    let mut longest_span = 0;
+    let mut current_span = 0;
+
+    for y in 0..world_size.1 {
+        for x in 0..world_size.0 {
+            let c = if map.contains(&Vector2::new(x, y)) {
+                current_span += 1;
+                '#'
+            } else {
+                longest_span = longest_span.max(current_span);
+                current_span = 0;
+                '.'
+            };
+            if output {
+                print!("{}", c);
+            }
+        }
+        if output {
+            println!();
+        }
     }
 
     longest_span
@@ -128,8 +159,8 @@ impl Day<i64> for Day14 {
             }
 
             println!("tree on {}", steps);
-            let longest_span = print_map(&rs_, world_size);
-            if longest_span > 10 {
+            if has_span(&rs_, world_size, 10) {
+                print_map(&rs_, world_size, true);
                 break;
             }
 
