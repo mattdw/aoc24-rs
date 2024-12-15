@@ -70,21 +70,17 @@ fn has_span(rs: &Vec<Robot>, world_size: (i64, i64), threshold: i64) -> bool {
         map.insert(r.p);
     }
 
-    let mut longest_span = 0;
     let mut current_span = 0;
 
     for y in 0..world_size.1 {
         for x in 0..world_size.0 {
-            let c = if map.contains(&Vector2::new(x, y)) {
+            if map.contains(&Vector2::new(x, y)) {
                 current_span += 1;
                 if current_span > threshold {
                     return true;
                 }
-                '#'
             } else {
-                longest_span = longest_span.max(current_span);
                 current_span = 0;
-                '.'
             };
         }
     }

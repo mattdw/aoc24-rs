@@ -203,7 +203,6 @@ fn unoccupied_2(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
             // if we ever hit a wall, we can't move
             Some(Object::Wall) => return None,
             None => {}
-            _ => panic!(),
         }
     }
 
