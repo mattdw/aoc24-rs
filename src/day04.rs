@@ -65,7 +65,34 @@ impl Day<i64> for Day4 {
             if c != 'A' {
                 continue;
             }
+
+            let co = m.idx_to_pt(idx as isize);
+
+            let runs = &[
+                ((-1, -1), (1, 1)),
+                ((1, 1), (-1, -1)),
+                ((1, -1), (-1, 1)),
+                ((-1, 1), (1, -1)),
+            ]
+            .map(|(start, dir)| gather(&m, (co.0 + start.0, co.1 + start.1), dir, 3));
+
+            if runs
+                .iter()
+                .filter(|v| {
+                    if let Some(v) = v {
+                        v == &vec!['M', 'A', 'S']
+                    } else {
+                        false
+                    }
+                })
+                .count()
+                >= 2
+            {
+                count += 1;
+            }
         }
+
+        count
     }
 }
 
