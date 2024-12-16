@@ -41,7 +41,7 @@ fn parse(input: &str) -> Day8 {
     }
 }
 
-fn all_pairs(locs: &[(i32, i32)]) -> Vec<((i32, i32), (i32, i32))> {
+fn cartesian_product(locs: &[(i32, i32)]) -> Vec<((i32, i32), (i32, i32))> {
     let mut outs = vec![];
     for left in locs.iter() {
         for right in locs.iter() {
@@ -115,7 +115,7 @@ impl Day<i32> for Day8 {
 
         let mut antinodes = HashMap::<(i32, i32), char>::new();
         for (freq, locs) in info.map.iter() {
-            for (left, right) in all_pairs(locs) {
+            for (left, right) in cartesian_product(locs) {
                 // println!("{:?} -> {:?}", left, right);
                 let dest = antinode_pos(left, right);
                 if in_bounds(&info, &dest) {
@@ -137,7 +137,7 @@ impl Day<i32> for Day8 {
         let mut antinodes = HashMap::<(i32, i32), char>::new();
 
         for (freq, locs) in info.map.iter() {
-            for (left, right) in all_pairs(locs) {
+            for (left, right) in cartesian_product(locs) {
                 // println!("{:?} -> {:?}", left, right);
                 let dests = antinode_positions_part2(&info, left, right);
                 for dest in dests {

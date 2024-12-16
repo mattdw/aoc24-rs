@@ -1,4 +1,4 @@
-use crate::Day;
+use crate::{iterext::IterExt, Day};
 
 use nalgebra::Vector2;
 use regex::Regex;
@@ -66,7 +66,7 @@ fn quadrant(r: &Robot, world_size: (i64, i64)) -> Option<i64> {
 fn has_span(rs: &Vec<Robot>, world_size: (i64, i64), threshold: i64) -> bool {
     let mut sorted = rs.clone();
     sorted.sort_by_cached_key(|r| r.p.y * world_size.0 + r.p.x);
-    let diffs = sorted.iter().zip(sorted.iter().skip(1)).map(|(a, b)| {
+    let diffs = sorted.as_slice().pairs().map(|(a, b)| {
         let dxy = (a.p - b.p).abs();
         dxy.y * world_size.0 + dxy.x
     });

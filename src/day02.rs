@@ -1,4 +1,4 @@
-use crate::Day;
+use crate::{iterext::IterExt, Day};
 
 fn parse(input: &str) -> Vec<Vec<i8>> {
     input
@@ -12,13 +12,9 @@ fn parse(input: &str) -> Vec<Vec<i8>> {
         .collect()
 }
 
-fn pairs<'a, T>(i: &'a [T]) -> impl Iterator<Item = (&'a T, &'a T)> {
-    i.iter().zip(i.iter().skip(1))
-}
-
 fn report_is_safe(r: &[i8]) -> bool {
     let mut increasing: Option<bool> = None;
-    for (a, b) in pairs(r) {
+    for (a, b) in r.pairs() {
         let diff = a - b;
         let sign = diff.signum() < 0;
 
