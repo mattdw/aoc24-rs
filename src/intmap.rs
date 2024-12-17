@@ -1,3 +1,4 @@
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct IntMap<T> {
     pub cells: Vec<T>,
     pub width: usize,
@@ -5,6 +6,7 @@ pub struct IntMap<T> {
 }
 
 impl<T: Default + Clone> IntMap<T> {
+    #[allow(dead_code)]
     pub fn new(width: usize, height: usize) -> IntMap<T> {
         let cells = vec![T::default(); width * height];
         IntMap {
@@ -56,6 +58,7 @@ impl<T: Default + Clone> IntMap<T> {
         self.cells.get(self.pt_to_idx(co) as usize)
     }
 
+    #[allow(dead_code)]
     pub fn set(&mut self, co: (isize, isize), val: T) {
         let idx = self.pt_to_idx(co);
         self.cells[idx as usize] = val;

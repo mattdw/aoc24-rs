@@ -1,5 +1,3 @@
-use reqwest::Result;
-
 use crate::{intmap::IntMap, Day};
 
 fn parse(input: &str) -> IntMap<char> {

@@ -1,11 +1,6 @@
-use std::{
-    collections::{HashSet, VecDeque},
-    thread::park,
-};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::{intmap::IntMap, Day};
-
-pub struct Day16 {}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Object {
@@ -15,18 +10,18 @@ enum Object {
     Empty,
 }
 
+impl Default for Object {
+    fn default() -> Self {
+        Object::Empty
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Dir {
     North,
     South,
     East,
     West,
-}
-
-impl Default for Object {
-    fn default() -> Self {
-        Object::Empty
-    }
 }
 
 fn parse(input: &str) -> (IntMap<Object>, (isize, isize), (isize, isize)) {
@@ -68,29 +63,80 @@ fn delta(d: Dir) -> (isize, isize) {
     }
 }
 
-fn a_star(m: &IntMap<Object>, start: (isize, isize), end: (isize, isize)) -> Option<i64> {
-    let mut seen = HashSet::<((isize, isize), Dir)>::new();
-    let mut q = Vec::<((isize, isize), Dir, i64)>::new();
+#[derive(Clone, Eq, PartialEq)]
+struct QueueState((isize, isize), Dir, i64, HashSet<(isize, isize)>);
 
-    q.push((start, Dir::East, 0));
+impl Ord for QueueState {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.2.cmp(&self.2)
+    }
+}
+
+impl PartialOrd for QueueState {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+fn dijkstra(
+    m: &IntMap<Object>,
+    start: (isize, isize),
+    start_dir: Dir,
+    end: (isize, isize),
+    first_only: bool,
+) -> Option<(i64, HashSet<(isize, isize)>)> {
+    let mut seen = HashMap::<((isize, isize), Dir), i64>::new();
+    let mut q = BinaryHeap::<QueueState>::new();
+    q.push(QueueState(start, start_dir, 0, HashSet::new()));
+
+    let mut best_cost = i64::MAX;
+    let mut bests = HashMap::<i64, HashSet<(isize, isize)>>::new();
 
     loop {
-        q.sort_by_key(|(_, _, cost)| -*cost);
-        let Some((pos, dir, cost)) = q.pop() else {
-            return None;
+        let Some(QueueState(pos, dir, cost, route)) = q.pop() else {
+            break;
         };
 
-        if seen.contains(&(pos, dir)) {
-            continue;
+        if let Some(&val) = seen.get(&(pos, dir)) {
+            if val < cost || first_only {
+                continue;
+            }
         }
-        seen.insert((pos, dir));
+
+        // record it as seen, with updated lowest cost as necessary
+        seen.entry((pos, dir))
+            .and_modify(|v| *v = (*v).min(cost))
+            .or_insert(cost);
+
+        if cost > best_cost {
+            break;
+        }
+
+        let mut new_route = route;
+        new_route.insert(pos);
 
         if pos == end {
-            return Some(cost);
+            // println!("found a route {} / {}", cost, new_route.len());
+            best_cost = best_cost.min(cost);
+            let r = bests.entry(cost).or_default();
+            r.extend(new_route);
+
+            if first_only {
+                break;
+            } else {
+                continue;
+            }
         }
 
         for nextd in adjacent_dirs(dir) {
-            q.push((pos.clone(), nextd, cost + 1000));
+            q.push(QueueState(pos, nextd, cost + 1000, new_route.clone()));
+        }
+
+        // turning is expensive but it's all we can do if we're at the last
+        // position, and there's no point wasting time generating forward
+        // steps that'll get seen first.
+        if pos == end {
+            continue;
         }
 
         let dxy = delta(dir);
@@ -98,23 +144,33 @@ fn a_star(m: &IntMap<Object>, start: (isize, isize), end: (isize, isize)) -> Opt
 
         if let Some(v) = m.get(fwd) {
             if v != &Object::Wall {
-                q.push((fwd, dir, cost + 1));
+                q.push(QueueState(fwd, dir, cost + 1, new_route));
             }
         }
     }
+
+    // dbg!(&bests);
+
+    Some((best_cost, bests.get(&best_cost).unwrap().clone()))
 }
+
+pub struct Day16 {}
 
 impl Day<i64> for Day16 {
     fn part1(input: &str) -> i64 {
         let (m, s, e) = parse(input);
 
-        let depth = a_star(&m, s, e);
+        let (cost, _visited) = dijkstra(&m, s, Dir::East, e, true).unwrap();
 
-        depth.unwrap()
+        cost
     }
 
     fn part2(input: &str) -> i64 {
-        0
+        let (m, s, e) = parse(input);
+
+        let (_, visited) = dijkstra(&m, s, Dir::East, e, false).unwrap();
+
+        visited.len() as i64
     }
 }
 
@@ -140,8 +196,38 @@ mod test {
     ###############
     ";
 
+    const TEST_INPUT_2: &'static str = "
+    #################
+    #...#...#...#..E#
+    #.#.#.#.#.#.#.#.#
+    #.#.#.#...#...#.#
+    #.#.#.#.###.#.#.#
+    #...#.#.#.....#.#
+    #.#.#.#.#.#####.#
+    #.#...#.#.#.....#
+    #.#.#####.#.###.#
+    #.#.#.......#...#
+    #.#.###.#####.###
+    #.#.#...#.....#.#
+    #.#.#.#####.###.#
+    #.#.#.........#.#
+    #.#.#.#########.#
+    #S#.............#
+    #################
+    ";
+
     #[test]
     fn part1_small() {
         assert_eq!(7036, Day16::part1(TEST_INPUT));
+    }
+
+    #[test]
+    fn part2_small() {
+        assert_eq!(45, Day16::part2(TEST_INPUT));
+    }
+
+    #[test]
+    fn part2_medium() {
+        assert_eq!(64, Day16::part2(TEST_INPUT_2));
     }
 }
