@@ -36,31 +36,50 @@ fn report_is_safe(r: &[i8]) -> bool {
     true
 }
 
-struct DroppingOne<'a> {
-    slice: &'a [i8],
-    curr: usize,
-}
+// struct DroppingOne<'a> {
+//     slice: &'a [i8],
+//     curr: usize,
+// }
 
-impl Iterator for DroppingOne<'_> {
-    type Item = Vec<i8>;
+// impl Iterator for DroppingOne<'_> {
+//     type Item = Vec<i8>;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.curr >= self.slice.len() {
+//     fn next(&mut self) -> Option<Self::Item> {
+//         if self.curr >= self.slice.len() {
+//             return None;
+//         }
+
+//         let mut v = Vec::with_capacity(self.slice.len() - 1);
+//         v.extend_from_slice(&self.slice[0..self.curr]);
+//         v.extend_from_slice(&self.slice[self.curr + 1..]);
+
+//         self.curr += 1;
+
+//         Some(v)
+//     }
+// }
+
+// fn dropping_one(r: &[i8]) -> DroppingOne {
+//     DroppingOne { slice: r, curr: 0 }
+// }
+
+fn dropping_one<'a>(r: &'a [i8]) -> impl Iterator<Item = Vec<i8>> + 'a {
+    let mut curr = 0;
+    let slice = r;
+
+    std::iter::from_fn(move || {
+        if curr >= slice.len() {
             return None;
         }
 
-        let mut v = Vec::with_capacity(self.slice.len() - 1);
-        v.extend_from_slice(&self.slice[0..self.curr]);
-        v.extend_from_slice(&self.slice[self.curr + 1..]);
+        let mut v = Vec::with_capacity(slice.len() - 1);
+        v.extend_from_slice(&slice[0..curr]);
+        v.extend_from_slice(&slice[curr + 1..]);
 
-        self.curr += 1;
+        curr += 1;
 
         Some(v)
-    }
-}
-
-fn dropping_one(r: &[i8]) -> DroppingOne {
-    DroppingOne { slice: r, curr: 0 }
+    })
 }
 
 pub struct Day2 {}
