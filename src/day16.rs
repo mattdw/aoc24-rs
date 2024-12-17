@@ -64,7 +64,7 @@ fn delta(d: Dir) -> (isize, isize) {
 }
 
 #[derive(Clone, Eq, PartialEq)]
-struct QueueState((isize, isize), Dir, i64, HashSet<(isize, isize)>);
+struct QueueState((isize, isize), Dir, i64, HashSet<(u8, u8)>);
 
 impl Ord for QueueState {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
@@ -84,13 +84,13 @@ fn dijkstra(
     start_dir: Dir,
     end: (isize, isize),
     first_only: bool,
-) -> Option<(i64, HashSet<(isize, isize)>)> {
+) -> Option<(i64, HashSet<(u8, u8)>)> {
     let mut seen = HashMap::<((isize, isize), Dir), i64>::new();
     let mut q = BinaryHeap::<QueueState>::new();
     q.push(QueueState(start, start_dir, 0, HashSet::new()));
 
     let mut best_cost = i64::MAX;
-    let mut bests = HashMap::<i64, HashSet<(isize, isize)>>::new();
+    let mut bests = HashMap::<i64, HashSet<(u8, u8)>>::new();
 
     loop {
         let Some(QueueState(pos, dir, cost, route)) = q.pop() else {
@@ -98,7 +98,7 @@ fn dijkstra(
         };
 
         if let Some(&val) = seen.get(&(pos, dir)) {
-            if val < cost || first_only {
+            if cost > val || first_only {
                 continue;
             }
         }
@@ -113,7 +113,7 @@ fn dijkstra(
         }
 
         let mut new_route = route;
-        new_route.insert(pos);
+        new_route.insert((pos.0 as u8, pos.1 as u8));
 
         if pos == end {
             // println!("found a route {} / {}", cost, new_route.len());
@@ -150,8 +150,9 @@ fn dijkstra(
     }
 
     // dbg!(&bests);
+    let best_set = bests.remove(&best_cost).unwrap();
 
-    Some((best_cost, bests.get(&best_cost).unwrap().clone()))
+    Some((best_cost, best_set))
 }
 
 pub struct Day16 {}
@@ -229,5 +230,37 @@ mod test {
     #[test]
     fn part2_medium() {
         assert_eq!(64, Day16::part2(TEST_INPUT_2));
+    }
+
+    #[test]
+    #[ignore]
+    fn bench_clone_hashset() {
+        let mut h = HashSet::new();
+        h.insert(((1, 2), Dir::East));
+        h.insert(((2, 3), Dir::West));
+        h.insert(((2, 3), Dir::West));
+
+        for i in 0..10_000_000 {
+            let h2 = h.clone();
+            // use both
+            assert_eq!(h2.len(), h.len());
+            // drop orig
+            h = h2;
+        }
+    }
+
+    #[test]
+    #[ignore]
+    fn bench_clone_vec() {
+        let mut h = Vec::new();
+        h.push(((1, 2), Dir::East));
+        h.push(((2, 3), Dir::West));
+        h.push(((2, 3), Dir::West));
+
+        for i in 0..10_000_000 {
+            let h2 = h.clone();
+            assert_eq!(h2.len(), h.len());
+            h = h2;
+        }
     }
 }
