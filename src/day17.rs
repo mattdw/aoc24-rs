@@ -142,25 +142,43 @@ fn recur(machine: &Machine, target: &[u64], current: u64) -> Option<u64> {
     for idx in 0..8 {
         let mut m = machine.clone();
         let nxt = current * 8 + idx;
-        m.a = nxt;
 
+        if nxt == 0 {
+            continue;
+        }
+
+        m.a = nxt;
         let res = run(m);
         // println!("{:?} -> {:?} {:?}", nxt, res, target);
 
-        if res.as_slice() == target {
+        // Success condition
+        if res == target {
             return Some(nxt);
         }
 
+        // overshoot - no point descending
         if res.len() > target.len() {
             return None;
         }
 
-        if let Some(v) = recur(machine, target, nxt + 1) {
+        // Check res against tail of target
+        let rlen = res.len();
+        let tlen = target.len();
+        let tail = &target[(tlen - rlen)..];
+        assert!(tail.len() <= res.len());
+
+        // And don't bother recursing if we don't have a matching tail already
+        if tail != res {
+            continue;
+        }
+
+        // Otherwise recursing is all we have left!
+        if let Some(v) = recur(machine, target, nxt) {
             return Some(v);
         }
     }
 
-    return None;
+    None
 }
 
 pub struct Day17 {}
