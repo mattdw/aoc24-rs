@@ -240,7 +240,7 @@ mod test {
         h.insert(((2, 3), Dir::West));
         h.insert(((2, 3), Dir::West));
 
-        for i in 0..10_000_000 {
+        for _i in 0..10_000_000 {
             let h2 = h.clone();
             // use both
             assert_eq!(h2.len(), h.len());
@@ -257,7 +257,7 @@ mod test {
         h.push(((2, 3), Dir::West));
         h.push(((2, 3), Dir::West));
 
-        for i in 0..10_000_000 {
+        for _i in 0..10_000_000 {
             let h2 = h.clone();
             assert_eq!(h2.len(), h.len());
             h = h2;
