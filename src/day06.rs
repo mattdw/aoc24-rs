@@ -54,9 +54,7 @@ impl Day6 {
                     guard = P(x, y);
                     x += 1;
                 }
-                ' ' | '\t' | '\r' => {
-                    ();
-                }
+                ' ' | '\t' | '\r' => {}
                 _ => {
                     panic!("unhandled char {c}");
                 }
@@ -170,7 +168,7 @@ impl Day<usize> for Day6 {
 
 #[cfg(test)]
 mod test {
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
     ....#.....
     .........#
     ..........
@@ -187,15 +185,15 @@ mod test {
 
     #[test]
     fn parse_t() {
-        let d = Day6::parse(&TEST_INPUT);
+        let d = Day6::parse(TEST_INPUT);
 
         assert_eq!(d.size, P(10, 10));
-        assert_eq!(true, d.walls.contains(&P(2, 3)));
+        assert!(d.walls.contains(&P(2, 3)));
     }
 
     #[test]
     fn run_t_1() {
-        let mut d = Day6::parse(&TEST_INPUT);
+        let mut d = Day6::parse(TEST_INPUT);
 
         while d.step(true).is_some() {}
 

@@ -2,18 +2,13 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::{intmap::IntMap, Day};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 enum Object {
     Wall,
     Start,
     End,
+    #[default]
     Empty,
-}
-
-impl Default for Object {
-    fn default() -> Self {
-        Object::Empty
-    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -179,7 +174,7 @@ impl Day<i64> for Day16 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
     ###############
     #.......#....E#
     #.#.###.#.###.#
@@ -197,7 +192,7 @@ mod test {
     ###############
     ";
 
-    const TEST_INPUT_2: &'static str = "
+    const TEST_INPUT_2: &str = "
     #################
     #...#...#...#..E#
     #.#.#.#.#.#.#.#.#

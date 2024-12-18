@@ -145,7 +145,7 @@ impl Day<String> for Day18 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
         5,4
         4,2
         4,5
@@ -177,7 +177,7 @@ mod test {
 
     #[test]
     fn p1_t() {
-        let d = Day18::parse(&TEST_INPUT, Some(TEST_SIZE));
+        let d = Day18::parse(TEST_INPUT, Some(TEST_SIZE));
         let mut corrupt = HashSet::<P>::new();
 
         for p in d.bytes.iter().take(12) {
@@ -192,7 +192,7 @@ mod test {
 
     #[test]
     fn p2_t() {
-        let d = Day18::parse(&TEST_INPUT, Some(TEST_SIZE));
+        let d = Day18::parse(TEST_INPUT, Some(TEST_SIZE));
         let mut corrupt = HashSet::<P>::new();
 
         // naive solution is linear search

@@ -98,7 +98,7 @@ impl Day<i64> for Day4 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
 MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM

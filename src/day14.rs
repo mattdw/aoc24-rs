@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::{iterext::IterExt, Day};
 
 use nalgebra::Vector2;
@@ -44,27 +46,23 @@ fn step(r: Robot, world_size: (i64, i64), n: i64) -> Robot {
 }
 
 fn quadrant(r: &Robot, world_size: (i64, i64)) -> Option<i64> {
-    let qx = if r.p.x < (world_size.0 / 2) {
-        Some(0)
-    } else if r.p.x > (world_size.0 / 2) {
-        Some(1)
-    } else {
-        None
+    let qx = match r.p.x.cmp(&(world_size.0 / 2)) {
+        Ordering::Less => Some(0),
+        Ordering::Greater => Some(1),
+        _ => None,
     };
 
-    let qy = if r.p.y < (world_size.1 / 2) {
-        Some(0)
-    } else if r.p.y > (world_size.1 / 2) {
-        Some(1)
-    } else {
-        None
+    let qy = match r.p.y.cmp(&(world_size.1 / 2)) {
+        Ordering::Less => Some(0),
+        Ordering::Greater => Some(1),
+        _ => None,
     };
 
     qx.and_then(|vx| qy.map(|vy| vy * 2 + vx))
 }
 
-fn has_span(rs: &Vec<Robot>, world_size: (i64, i64), threshold: i64) -> bool {
-    let mut sorted = rs.clone();
+fn has_span(rs: &[Robot], world_size: (i64, i64), threshold: i64) -> bool {
+    let mut sorted = rs.to_owned();
     sorted.sort_by_cached_key(|r| r.p.y * world_size.0 + r.p.x);
     let diffs = sorted.as_slice().pairs().map(|(a, b)| {
         let dxy = (a.p - b.p).abs();
@@ -168,12 +166,11 @@ impl Day<i64> for Day14 {
         let mut steps = 0;
         loop {
             steps += 1;
-            let rs_ = rs.iter().map(|&r| step(r, world_size, 1)).collect();
+            let rs_: Vec<Robot> = rs.iter().map(|&r| step(r, world_size, 1)).collect();
             let mut counts = [0; 4];
             for r in &rs_ {
                 if let Some(q) = quadrant(r, world_size) {
                     counts[q as usize] += 1;
-                } else {
                 }
             }
 
@@ -194,7 +191,7 @@ impl Day<i64> for Day14 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "p=0,4 v=3,-3
+    const TEST_INPUT: &str = "p=0,4 v=3,-3
         p=6,3 v=-1,-3
         p=10,3 v=-1,2
         p=2,0 v=2,-1
@@ -209,7 +206,7 @@ mod test {
 
     #[test]
     fn parse_t() {
-        let rs = super::parse(&TEST_INPUT);
+        let rs = super::parse(TEST_INPUT);
         assert_eq!(rs.len(), 12);
     }
 

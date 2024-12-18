@@ -93,11 +93,8 @@ impl Day<i64> for Day13 {
 
         let mut winnable: Vec<(Machine, Vector2<i64>)> = vec![];
         for machine in machines {
-            match solve_machine(&machine, Vector2::zeros()) {
-                Some(v) => {
-                    winnable.push((machine, v));
-                }
-                None => {}
+            if let Some(v) = solve_machine(&machine, Vector2::zeros()) {
+                winnable.push((machine, v));
             }
 
             // This worked, but at about 50x runtime.
@@ -130,11 +127,8 @@ impl Day<i64> for Day13 {
 
         let mut winnable: Vec<(Machine, Vector2<i64>)> = vec![];
         for machine in machines {
-            match solve_machine(&machine, offset) {
-                Some(v) => {
-                    winnable.push((machine, v));
-                }
-                None => {}
+            if let Some(v) = solve_machine(&machine, offset) {
+                winnable.push((machine, v));
             }
         }
 
@@ -149,7 +143,7 @@ impl Day<i64> for Day13 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
     Button A: X+94, Y+34
     Button B: X+22, Y+67
     Prize: X=8400, Y=5400

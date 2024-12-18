@@ -111,7 +111,7 @@ impl Day<i64> for Day7 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
         190: 10 19
         3267: 81 40 27
         83: 17 5

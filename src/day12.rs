@@ -203,14 +203,14 @@ impl Day<i64> for Day12 {
 #[cfg(test)]
 mod test {
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
     AAAA
     BBCD
     BBCC
     EEEC
     ";
 
-    const TEST_INPUT_LARGER: &'static str = "
+    const TEST_INPUT_LARGER: &str = "
     RRRRIICCFF
     RRRRIICCCF
     VVRRRCCFFF

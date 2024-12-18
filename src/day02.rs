@@ -63,7 +63,7 @@ fn report_is_safe(r: &[i8]) -> bool {
 //     DroppingOne { slice: r, curr: 0 }
 // }
 
-fn dropping_one<'a>(r: &'a [i8]) -> impl Iterator<Item = Vec<i8>> + 'a {
+fn dropping_one(r: &[i8]) -> impl Iterator<Item = Vec<i8>> + '_ {
     let mut curr = 0;
     let slice = r;
 

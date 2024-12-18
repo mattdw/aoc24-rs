@@ -76,14 +76,14 @@ fn run(m: Machine) -> Vec<u64> {
             0 => {
                 // adv
                 let num = m.a;
-                let denom = (2 as u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
+                let denom = (2_u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
                 m.a = num / denom;
                 m.ip += 2;
             }
             1 => {
                 // bxl
                 let lit = m.program[m.ip + 1];
-                m.b = m.b ^ lit;
+                m.b ^= lit;
                 m.ip += 2;
             }
             2 => {
@@ -102,7 +102,7 @@ fn run(m: Machine) -> Vec<u64> {
             }
             4 => {
                 // bxc
-                m.b = m.b ^ m.c;
+                m.b ^= m.c;
                 m.ip += 2;
             }
             5 => {
@@ -113,14 +113,14 @@ fn run(m: Machine) -> Vec<u64> {
             6 => {
                 // bdv
                 let num = m.a;
-                let denom = (2 as u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
+                let denom = (2_u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
                 m.b = num / denom;
                 m.ip += 2;
             }
             7 => {
                 // cdv
                 let num = m.a;
-                let denom = (2 as u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
+                let denom = (2_u64).pow(combo(&m, m.program[m.ip + 1]) as u32);
                 m.c = num / denom;
                 m.ip += 2;
             }
@@ -203,7 +203,7 @@ impl Day<String> for Day17 {
 mod test {
     use super::*;
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
         Register A: 729
         Register B: 0
         Register C: 0
@@ -213,10 +213,10 @@ mod test {
 
     #[test]
     fn t1() {
-        assert_eq!(vec![4, 6, 3, 5, 6, 3, 5, 2, 1, 0], run(parse(&TEST_INPUT)));
+        assert_eq!(vec![4, 6, 3, 5, 6, 3, 5, 2, 1, 0], run(parse(TEST_INPUT)));
     }
 
-    const TEST_INPUT_2: &'static str = "
+    const TEST_INPUT_2: &str = "
         Register A: 2024
         Register B: 0
         Register C: 0

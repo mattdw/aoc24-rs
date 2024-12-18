@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    convert::identity,
-};
+use std::collections::{HashMap, VecDeque};
 
 use nalgebra::Vector2;
 
@@ -47,8 +44,7 @@ fn parse(input: &str) -> (Map, Co, Vec<Co>) {
     let moves: Vec<Co> = move_section
         .trim()
         .chars()
-        .map(move_to_dir)
-        .filter_map(identity)
+        .filter_map(move_to_dir)
         .rev()
         .collect();
 
@@ -97,7 +93,7 @@ fn move_to_dir(c: char) -> Option<Co> {
 
 fn unoccupied(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
     let mut mult = 1;
-    let mut intervening = vec![pos.clone()];
+    let mut intervening = vec![*pos];
     loop {
         let offset = dir * mult;
         let new_co = pos + offset;
@@ -148,8 +144,7 @@ fn make_move(state: (Map, Co, Vec<Co>)) -> (Map, Co, Vec<Co>) {
     assert_eq!(_unocc, intervening.last().unwrap() + next_move);
 
     // we have to go from the end to not overwrite anything
-    while !intervening.is_empty() {
-        let i = intervening.pop().unwrap();
+    while let Some(i) = intervening.pop() {
         let nxt_i = i + next_move;
         let o = *map.get(&i).expect("cell should not be empty");
         if o == Object::Robot {
@@ -172,9 +167,9 @@ fn map_score_2(map: &Map) -> i64 {
 }
 
 fn unoccupied_2(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
-    let mut intervening = vec![pos.clone()];
+    let mut intervening = vec![*pos];
     let mut rays = VecDeque::new();
-    rays.push_back(pos.clone());
+    rays.push_back(*pos);
     let x1 = Co::new(1, 0);
     loop {
         let Some(pos) = rays.pop_front() else {
@@ -206,7 +201,7 @@ fn unoccupied_2(map: &Map, pos: &Co, dir: &Co) -> Option<(Co, Vec<Co>)> {
         }
     }
 
-    Some((pos.clone(), intervening))
+    Some((*pos, intervening))
 }
 
 fn make_move_2(state: (Map, Co, Vec<Co>)) -> (Map, Co, Vec<Co>) {
@@ -280,7 +275,7 @@ impl Day<i64> for Day15 {
 mod test {
     use super::*;
 
-    const TEST_INPUT_SMALL: &'static str = "
+    const TEST_INPUT_SMALL: &str = "
         ########
 #..O.O.#
 ##@.O..#
@@ -293,7 +288,7 @@ mod test {
 <^^>>>vv<v>>v<<
     ";
 
-    const TEST_INPUT: &'static str = "
+    const TEST_INPUT: &str = "
 ##########
 #..O..O.O#
 #......O.#

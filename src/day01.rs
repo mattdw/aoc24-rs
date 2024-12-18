@@ -71,7 +71,7 @@ mod test {
         ";
 
         assert_eq!(
-            super::parse(&test_in),
+            super::parse(test_in),
             (vec!(1, 2, 3, 3, 3, 4), vec!(3, 3, 3, 4, 5, 9))
         );
     }

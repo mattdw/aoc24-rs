@@ -158,7 +158,7 @@ mod test {
     use super::*;
     use crate::fetch_input;
 
-    const TEST_INPUT: &'static str = "2333133121414131402";
+    const TEST_INPUT: &str = "2333133121414131402";
 
     #[tokio::test]
     async fn test_disk_sizes() {
