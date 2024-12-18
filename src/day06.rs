@@ -46,7 +46,7 @@ impl Day6 {
                     x += 1;
                 }
                 '\n' => {
-                    x_max = x;
+                    x_max = x; // at this point we're one off the end
                     x = 0;
                     y += 1;
                 }
@@ -62,12 +62,11 @@ impl Day6 {
                 }
             }
         }
-        let mut y_max = y;
 
         Day6 {
             visited: HashSet::from([guard]),
             walls,
-            size: P(x_max, y_max + 1),
+            size: P(x_max, y + 1),
             guard_pos: guard,
             guard_dir: P(0, -1),
         }
