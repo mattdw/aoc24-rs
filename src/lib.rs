@@ -67,32 +67,31 @@ pub trait Day<T: Debug + Eq> {
     fn part2(input: &str) -> T;
 }
 
-pub async fn fetch_input(day: u8) -> Result<String, anyhow::Error> {
-    let _ = tokio::fs::create_dir("inputs").await;
-    let existing = tokio::fs::read_to_string(format!("inputs/{day}.txt")).await;
+pub fn fetch_input(day: u8) -> Result<String, anyhow::Error> {
+    let _ = std::fs::create_dir("inputs");
+    let existing = std::fs::read_to_string(format!("inputs/{day}.txt"));
 
     if let Ok(s) = existing {
         return Ok(s);
     }
 
     let session = env::var("SESSION").expect("SESSION env var is required to fetch input");
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let resp = client
         .get(format!("https://adventofcode.com/2024/day/{day}/input"))
         .header(COOKIE, format!("session={session}"))
-        .send()
-        .await?;
+        .send()?;
 
-    let text: String = resp.text().await?;
-    tokio::fs::write(format!("inputs/{day}.txt"), &text).await?;
+    let text: String = resp.text()?;
+    std::fs::write(format!("inputs/{day}.txt"), &text)?;
 
     Ok(text)
 }
 
-pub async fn fetch_input_s(day: &str) -> Result<String, anyhow::Error> {
+pub fn fetch_input_s(day: &str) -> Result<String, anyhow::Error> {
     let s: u8 = day
         .trim_matches(['d', 'a', 'y', 'D'])
         .parse()
         .expect("ends with a number");
-    fetch_input(s).await
+    fetch_input(s)
 }

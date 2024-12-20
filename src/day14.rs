@@ -63,7 +63,7 @@ fn quadrant(r: &Robot, world_size: (i64, i64)) -> Option<i64> {
 
 fn has_span(rs: &[Robot], world_size: (i64, i64), threshold: i64) -> bool {
     let mut sorted = rs.to_owned();
-    sorted.sort_by_cached_key(|r| r.p.y * world_size.0 + r.p.x);
+    sorted.sort_by_key(|r| r.p.y * world_size.0 + r.p.x);
     let diffs = sorted.as_slice().pairs().map(|(a, b)| {
         let dxy = (a.p - b.p).abs();
         dxy.y * world_size.0 + dxy.x
@@ -167,12 +167,12 @@ impl Day<i64> for Day14 {
         loop {
             steps += 1;
             let rs_: Vec<Robot> = rs.iter().map(|&r| step(r, world_size, 1)).collect();
-            let mut counts = [0; 4];
-            for r in &rs_ {
-                if let Some(q) = quadrant(r, world_size) {
-                    counts[q as usize] += 1;
-                }
-            }
+            // let mut counts = [0; 4];
+            // for r in &rs_ {
+            //     if let Some(q) = quadrant(r, world_size) {
+            //         counts[q as usize] += 1;
+            //     }
+            // }
 
             // println!("tree on {}", steps);
             if has_span(&rs_, world_size, 10) {

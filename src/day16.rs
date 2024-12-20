@@ -59,11 +59,11 @@ fn delta(d: Dir) -> (isize, isize) {
 }
 
 #[derive(Clone, Eq, PartialEq)]
-struct QueueState((isize, isize), Dir, i64, HashSet<(u8, u8)>);
+struct QueueState(i32, (isize, isize), Dir, HashSet<(u8, u8)>);
 
 impl Ord for QueueState {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.2.cmp(&self.2)
+        other.0.cmp(&self.0)
     }
 }
 
@@ -73,6 +73,10 @@ impl PartialOrd for QueueState {
     }
 }
 
+fn manhattan(src: &(isize, isize), dest: &(isize, isize)) -> isize {
+    (dest.0 - src.0).abs() + (dest.1 - src.1).abs()
+}
+
 fn dijkstra(
     m: &IntMap<Object>,
     start: (isize, isize),
@@ -80,17 +84,21 @@ fn dijkstra(
     end: (isize, isize),
     first_only: bool,
 ) -> Option<(i64, HashSet<(u8, u8)>)> {
-    let mut seen = HashMap::<((isize, isize), Dir), i64>::new();
-    let mut q = BinaryHeap::<QueueState>::new();
-    q.push(QueueState(start, start_dir, 0, HashSet::new()));
+    let mut seen = HashMap::<((isize, isize), Dir), i32>::new();
+    let mut q = BinaryHeap::<QueueState>::with_capacity(4096);
+    q.push(QueueState(0, start, start_dir, HashSet::new()));
 
-    let mut best_cost = i64::MAX;
-    let mut bests = HashMap::<i64, HashSet<(u8, u8)>>::new();
+    let mut best_cost = i32::MAX;
+    let mut bests = HashMap::<i32, HashSet<(u8, u8)>>::new();
 
     loop {
-        let Some(QueueState(pos, dir, cost, route)) = q.pop() else {
+        let Some(QueueState(cost, pos, dir, route)) = q.pop() else {
             break;
         };
+
+        if cost > best_cost {
+            break;
+        }
 
         if let Some(&val) = seen.get(&(pos, dir)) {
             if cost > val || first_only {
@@ -103,18 +111,20 @@ fn dijkstra(
             .and_modify(|v| *v = (*v).min(cost))
             .or_insert(cost);
 
-        if cost > best_cost {
-            break;
+        // manhattan should be an appropriate minimum cost
+        let mhtn = manhattan(&pos, &end) as i32;
+        if cost + mhtn > best_cost {
+            continue;
         }
 
-        let mut new_route = route;
-        new_route.insert((pos.0 as u8, pos.1 as u8));
+        let mut route = route;
+        route.insert((pos.0 as u8, pos.1 as u8));
 
         if pos == end {
             // println!("found a route {} / {}", cost, new_route.len());
             best_cost = best_cost.min(cost);
             let r = bests.entry(cost).or_default();
-            r.extend(new_route);
+            r.extend(route);
 
             if first_only {
                 break;
@@ -124,30 +134,23 @@ fn dijkstra(
         }
 
         for nextd in adjacent_dirs(dir) {
-            q.push(QueueState(pos, nextd, cost + 1000, new_route.clone()));
+            q.push(QueueState(cost + 1000, pos, nextd, route.clone()));
         }
 
-        // turning is expensive but it's all we can do if we're at the last
-        // position, and there's no point wasting time generating forward
-        // steps that'll get seen first.
-        if pos == end {
-            continue;
-        }
-
-        let dxy = delta(dir);
-        let fwd = (pos.0 + dxy.0, pos.1 + dxy.1);
-
+        let fwd = {
+            let dxy = delta(dir);
+            (pos.0 + dxy.0, pos.1 + dxy.1)
+        };
         if let Some(v) = m.get(fwd) {
-            if v != &Object::Wall {
-                q.push(QueueState(fwd, dir, cost + 1, new_route));
+            if *v != Object::Wall {
+                q.push(QueueState(cost + 1, fwd, dir, route));
             }
         }
     }
 
-    // dbg!(&bests);
     let best_set = bests.remove(&best_cost).unwrap();
 
-    Some((best_cost, best_set))
+    Some((best_cost as i64, best_set))
 }
 
 pub struct Day16 {}

@@ -160,10 +160,10 @@ mod test {
 
     const TEST_INPUT: &str = "2333133121414131402";
 
-    #[tokio::test]
-    async fn test_disk_sizes() {
+    #[test]
+    fn test_disk_sizes() {
         assert_eq!(42, disk_size(TEST_INPUT));
-        assert_eq!(95567, disk_size(&fetch_input(9).await.expect("can load")));
+        assert_eq!(95567, disk_size(&fetch_input(9).expect("can load")));
     }
 
     #[test]

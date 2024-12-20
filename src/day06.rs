@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::Day;
+use crate::{intmap::IntMap, Day};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 struct P(i16, i16);
@@ -24,7 +24,8 @@ pub struct Day6 {
     size: P,
     guard_pos: P,
     guard_dir: P,
-    walls: HashSet<P>,
+    // walls: HashSet<P>,
+    walls: IntMap<bool>,
     visited: HashSet<P>,
 }
 
@@ -61,9 +62,14 @@ impl Day6 {
             }
         }
 
+        let mut walls_i = IntMap::new(x_max as usize, (y + 1) as usize);
+        for P(x, y) in walls.iter() {
+            walls_i.set((*x as isize, *y as isize), true);
+        }
+
         Day6 {
             visited: HashSet::from([guard]),
-            walls,
+            walls: walls_i,
             size: P(x_max, y + 1),
             guard_pos: guard,
             guard_dir: P(0, -1),
@@ -83,7 +89,7 @@ impl Day6 {
     fn step(&mut self, track: bool) -> Option<P> {
         let next_pos = self.next_pos();
 
-        if self.walls.contains(&next_pos) {
+        if let Some(true) = self.walls.get((next_pos.0 as isize, next_pos.1 as isize)) {
             self.guard_dir = self.guard_dir.clockwise();
         } else {
             if !self.in_bounds(&next_pos) {
@@ -124,7 +130,7 @@ impl Day<usize> for Day6 {
                 continue;
             }
             let mut newd = d.clone();
-            newd.walls.insert(p);
+            newd.walls.set((p.0 as isize, p.1 as isize), true);
 
             let mut hare = newd.clone();
             let mut tortoise = newd;
@@ -188,7 +194,7 @@ mod test {
         let d = Day6::parse(TEST_INPUT);
 
         assert_eq!(d.size, P(10, 10));
-        assert!(d.walls.contains(&P(2, 3)));
+        assert_eq!(d.walls.get((2, 3)), Some(&true));
     }
 
     #[test]
