@@ -2,4 +2,4 @@
 _.file = '.env'
 
 [tasks.all]
-run = "cargo nextest run --test-threads=1 --test=all --release"
+run = "cargo nextest run --test-threads=1 --test=all --release --no-fail-fast"

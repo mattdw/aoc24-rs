@@ -58,6 +58,24 @@ pub use day18::Day18;
 mod day19;
 pub use day19::Day19;
 
+mod day20;
+pub use day20::Day20;
+
+mod day21;
+pub use day21::Day21;
+
+mod day22;
+pub use day22::Day22;
+
+mod day23;
+pub use day23::Day23;
+
+mod day24;
+pub use day24::Day24;
+
+mod day25;
+pub use day25::Day25;
+
 use std::{env, fmt::Debug};
 
 use reqwest::header::COOKIE;
