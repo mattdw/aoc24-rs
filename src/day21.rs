@@ -1,3 +1,24 @@
+/*
+
+--- Part Two ---
+
+Just as the missing Historian is released, The Historians realize that a second member of their search party has also been missing this entire time!
+
+A quick life-form scan reveals the Historian is also trapped in a locked area of the ship. Due to a variety of hazards, robots are once again dispatched, forming another chain of remote control keypads managing robotic-arm-wielding robots.
+
+This time, many more robots are involved. In summary, there are the following keypads:
+
+One directional keypad that you are using.
+25 directional keypads that robots are using.
+One numeric keypad (on a door) that a robot is using.
+The keypads form a chain, just like before: your directional keypad controls a robot which is typing on a directional keypad which controls a robot which is typing on a directional keypad... and so on, ending with the robot which is typing on the numeric keypad.
+
+The door codes are the same this time around; only the number of robots and directional keypads has changed.
+
+Find the fewest number of button presses you'll need to perform in order to cause the robot in front of the door to type each code. What is the sum of the complexities of the five codes on your list?
+
+*/
+
 use std::{collections::HashMap, io::Read};
 
 use crate::Day;
@@ -162,6 +183,59 @@ fn plan(target: &[u8], pad: &PadMap) -> Vec<u8> {
     }
 
     out
+}
+
+fn plan_len(
+    from_char: u8,
+    to_char: u8,
+    // target: &[u8],
+    pad_arrows: &PadMap,
+    pad_nums: &PadMap,
+    depth: usize,
+    cache: &mut HashMap<(u8, u8, usize), usize>,
+) -> usize {
+    let pad = if depth == 0 { pad_nums } else { pad_arrows };
+    let A_pos = pad[b'A' as usize];
+    let empty = pad[b'_' as usize];
+
+    // let mut cache = vec![Vec::<u8>::new(); 128 * 128];
+
+    if let Some(c) = cache.get(&(from_char, to_char, depth)) {
+        return *c;
+    }
+
+    let mut curr = pad[from_char as usize];
+    let mut curr_b = from_char;
+    let mut out = Vec::<u8>::new();
+
+    let c = pad[to_char as usize];
+    // navigate to each button
+    let delta = (c.0 - curr.0, c.1 - curr.1);
+
+    let x_first = direction_xy(&curr, &c, &empty);
+
+    let (x, y) = delta;
+    let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
+    let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
+
+    let mut me = Vec::new();
+
+    // let ds = unpack_delta(delta, x_first);
+    if x_first {
+        me.extend(xs);
+        me.extend(ys);
+    } else {
+        me.extend(ys);
+        me.extend(xs);
+    }
+    // push each button
+    me.push(b'A');
+
+    cache.insert((from_char, to_char, depth), me.len());
+
+    me.len();
+
+    out.len()
 }
 
 impl Day<isize> for Day21 {
