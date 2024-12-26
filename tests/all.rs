@@ -41,7 +41,8 @@ check!(day16, Day16, 83444, 483);
 check!(day17, Day17, "4,6,1,4,2,1,3,1,6", 202366627359274_i64);
 check!(day18, Day18, "384", "36,10");
 check!(day19, Day19, 290, 712058625427487_i64);
-
+// Day 20 was frustratingly specified and took way too long
+check!(day20, Day20, 1406, 1006101);
 check!(day21, Day21, 184718, 228800606998554_i64);
 
 // part 2 runs in > .3s
@@ -52,7 +53,6 @@ check!(day25, Day25, 3483, -1);
 
 //-- Car races, collisions and cheats
 //-- I'm just not getting the right answer
-// check!(day20, Day20, 1406, -1);
 
 // Recursive keypads - can't see how to restructure
 // as recursive algo that deals with lengths rather than strings?
