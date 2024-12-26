@@ -42,10 +42,12 @@ check!(day17, Day17, "4,6,1,4,2,1,3,1,6", "202366627359274");
 check!(day18, Day18, "384", "36,10");
 check!(day19, Day19, 290, 712058625427487);
 
+check!(day21, Day21, 184718, 228800606998554);
+
 // part 2 runs in > .3s
 check!(day22, Day22, 15335183969, 1696);
 
-// check!(day24, Day24, -1, -1);
+check!(day24, Day24, "51837135476040", "0");
 // check!(day25, Day25, -1, -1);
 
 //-- Car races, collisions and cheats
@@ -54,7 +56,6 @@ check!(day22, Day22, 15335183969, 1696);
 
 // Recursive keypads - can't see how to restructure
 // as recursive algo that deals with lengths rather than strings?
-// check!(day21, Day21, 184718, -1);
 
 // -- LAN Party, filled mem doing graph clustering a naive way
 // check!(day23, Day23, "1476", "-1");

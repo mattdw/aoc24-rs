@@ -134,6 +134,10 @@ fn direction_xy(curr: &(i8, i8), dest: &(i8, i8), empty: &(i8, i8)) -> bool {
     false
 }
 
+/*
+    solve(target, depth) = solve(expand(target), depth - 1)
+*/
+
 fn plan(target: &[u8], pad: &PadMap) -> Vec<u8> {
     let A_pos = pad[b'A' as usize];
     let empty = pad[b'_' as usize];
@@ -185,58 +189,130 @@ fn plan(target: &[u8], pad: &PadMap) -> Vec<u8> {
     out
 }
 
-fn plan_len(
-    from_char: u8,
-    to_char: u8,
-    // target: &[u8],
-    pad_arrows: &PadMap,
-    pad_nums: &PadMap,
+fn plan_rec(
+    target: &[u8],
+    numpad: &PadMap,
+    arrowpad: &PadMap,
+    start_depth: usize,
     depth: usize,
     cache: &mut HashMap<(u8, u8, usize), usize>,
 ) -> usize {
-    let pad = if depth == 0 { pad_nums } else { pad_arrows };
+    let pad = if depth == start_depth {
+        // numpad
+        arrowpad
+    } else {
+        arrowpad
+    };
+
     let A_pos = pad[b'A' as usize];
     let empty = pad[b'_' as usize];
 
-    // let mut cache = vec![Vec::<u8>::new(); 128 * 128];
+    let mut curr = A_pos;
+    let mut curr_b = b'A';
+    let mut out = 0;
+    for &b in target.iter() {
+        if let Some(v) = cache.get(&(curr_b, b, depth)) {
+            // if !v.is_empty() {
+            out += v;
+            curr = pad[b as usize];
+            curr_b = b;
+            continue;
+            // }
+        }
 
-    if let Some(c) = cache.get(&(from_char, to_char, depth)) {
-        return *c;
+        let c = pad[b as usize];
+        // navigate to each button
+        let delta = (c.0 - curr.0, c.1 - curr.1);
+
+        let x_first = direction_xy(&curr, &c, &empty);
+
+        let (x, y) = delta;
+        let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
+        let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
+
+        let mut me = Vec::new();
+
+        // let ds = unpack_delta(delta, x_first);
+        if x_first {
+            me.extend(xs);
+            me.extend(ys);
+        } else {
+            me.extend(ys);
+            me.extend(xs);
+        }
+        // push each button
+        me.push(b'A');
+        // cache[curr_b as usize * 128 + b as usize] = me.len();
+
+        let len = if depth == 0 {
+            me.len()
+        } else {
+            plan_rec(&me, numpad, arrowpad, start_depth, depth - 1, cache)
+        };
+
+        cache.insert((curr_b, b, depth), len);
+
+        // out.extend(me);
+        out += len;
+        curr = c;
+        curr_b = b;
     }
 
-    let mut curr = pad[from_char as usize];
-    let mut curr_b = from_char;
-    let mut out = Vec::<u8>::new();
-
-    let c = pad[to_char as usize];
-    // navigate to each button
-    let delta = (c.0 - curr.0, c.1 - curr.1);
-
-    let x_first = direction_xy(&curr, &c, &empty);
-
-    let (x, y) = delta;
-    let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
-    let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
-
-    let mut me = Vec::new();
-
-    // let ds = unpack_delta(delta, x_first);
-    if x_first {
-        me.extend(xs);
-        me.extend(ys);
-    } else {
-        me.extend(ys);
-        me.extend(xs);
-    }
-    // push each button
-    me.push(b'A');
-
-    cache.insert((from_char, to_char, depth), me.len());
-
-    me.len();
-
-    out.len()
+    out
 }
+
+// fn plan_len(
+//     from_char: u8,
+//     to_char: u8,
+//     // target: &[u8],
+//     pad_arrows: &PadMap,
+//     pad_nums: &PadMap,
+//     depth: usize,
+//     cache: &mut HashMap<(u8, u8, usize), usize>,
+// ) -> usize {
+//     let pad = if depth == 0 { pad_nums } else { pad_arrows };
+//     let A_pos = pad[b'A' as usize];
+//     let empty = pad[b'_' as usize];
+
+//     // let mut cache = vec![Vec::<u8>::new(); 128 * 128];
+
+//     if let Some(c) = cache.get(&(from_char, to_char, depth)) {
+//         return *c;
+//     }
+
+//     let mut curr = pad[from_char as usize];
+//     let mut curr_b = from_char;
+//     let mut out = Vec::<u8>::new();
+
+//     let c = pad[to_char as usize];
+//     // navigate to each button
+//     let delta = (c.0 - curr.0, c.1 - curr.1);
+
+//     let x_first = direction_xy(&curr, &c, &empty);
+
+//     let (x, y) = delta;
+//     let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
+//     let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
+
+//     let mut me = Vec::new();
+
+//     // let ds = unpack_delta(delta, x_first);
+//     if x_first {
+//         me.extend(xs);
+//         me.extend(ys);
+//     } else {
+//         me.extend(ys);
+//         me.extend(xs);
+//     }
+//     // push each button
+//     me.push(b'A');
+
+//     cache.insert((from_char, to_char, depth), me.len());
+
+//     me.len();
+
+//     out.len()
+// }
 
 impl Day<isize> for Day21 {
     fn part1(input: &str) -> isize {
@@ -246,10 +322,11 @@ impl Day<isize> for Day21 {
         let mut complexity = 0;
         for p0 in input.split_whitespace() {
             let p1 = plan(p0.as_bytes(), &n);
-            let p2 = plan(&p1, &a);
-            let p3 = plan(&p2, &a);
+            let mut cache = HashMap::new();
+            let p3 = plan_rec(&p1, &n, &a, 1, 1, &mut cache);
+            // let p3 = plan(&p2, &a);
 
-            complexity += p0[0..3].parse::<isize>().unwrap() * p3.len() as isize;
+            complexity += p0[0..3].parse::<isize>().unwrap() * p3 as isize;
         }
 
         complexity
@@ -263,16 +340,19 @@ impl Day<isize> for Day21 {
         for p0 in input.split_whitespace() {
             let p1 = plan(p0.as_bytes(), &n);
 
-            let mut curr = p1;
-            for _i in 0..25 {
-                curr = plan(&curr, &a);
-                // println!("{_i}: {:?}", &curr.len());
-                println!("{_i}");
-            }
+            // let mut curr = p1;
+            // for _i in 0..25 {
+            //     curr = plan(&curr, &a);
+            //     // println!("{_i}: {:?}", &curr.len());
+            //     println!("{_i}");
+            // }
 
-            let p3 = plan(&curr, &a);
+            // let p3 = plan(&curr, &a);
 
-            complexity += p0[0..3].parse::<isize>().unwrap() * p3.len() as isize;
+            let mut cache = HashMap::new();
+            let p3_len = plan_rec(&p1, &n, &a, 24, 24, &mut cache);
+
+            complexity += p0[0..3].parse::<isize>().unwrap() * p3_len as isize;
         }
 
         complexity
