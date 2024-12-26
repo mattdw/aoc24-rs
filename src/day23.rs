@@ -47,7 +47,7 @@ impl Day23 {
         Day23 { connections }
     }
 
-    fn find_threes(d: &Day23, n: usize) -> HashSet<Vec<Name>> {
+    fn find_threes(d: &Day23, _n: usize) -> HashSet<Vec<Name>> {
         let mut out = HashSet::new();
         for a in d.connections.keys() {
             let a_conns = d.connections.get(a).unwrap();

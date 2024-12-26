@@ -73,6 +73,7 @@ impl Day<isize> for Day25 {
     }
 
     fn part2(input: &str) -> isize {
+        let _d = parse(input);
         todo!()
     }
 }

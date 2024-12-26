@@ -19,7 +19,7 @@ Find the fewest number of button presses you'll need to perform in order to caus
 
 */
 
-use std::{collections::HashMap, io::Read};
+use std::collections::HashMap;
 
 use crate::Day;
 pub struct Day21 {}
@@ -62,10 +62,10 @@ fn parse_map(s: &str) -> PadMap {
     arr
 }
 
-const ups: [u8; 16] = [b'^'; 16];
-const downs: [u8; 16] = [b'v'; 16];
-const lefts: [u8; 16] = [b'<'; 16];
-const rights: [u8; 16] = [b'>'; 16];
+const UPS: [u8; 16] = [b'^'; 16];
+const DOWNS: [u8; 16] = [b'v'; 16];
+const LEFTS: [u8; 16] = [b'<'; 16];
+const RIGHTS: [u8; 16] = [b'>'; 16];
 
 // fn unpack_delta(co: (i8, i8), x_first: bool) -> Vec<u8> {
 //     // while x != 0 {
@@ -139,12 +139,12 @@ fn direction_xy(curr: &(i8, i8), dest: &(i8, i8), empty: &(i8, i8)) -> bool {
 */
 
 fn plan(target: &[u8], pad: &PadMap) -> Vec<u8> {
-    let A_pos = pad[b'A' as usize];
+    let a_pos = pad[b'A' as usize];
     let empty = pad[b'_' as usize];
 
     let mut cache = vec![Vec::<u8>::new(); 128 * 128];
 
-    let mut curr = A_pos;
+    let mut curr = a_pos;
     let mut curr_b = b'A';
     let mut out = Vec::<u8>::new();
     for &b in target.iter() {
@@ -164,8 +164,8 @@ fn plan(target: &[u8], pad: &PadMap) -> Vec<u8> {
         let x_first = direction_xy(&curr, &c, &empty);
 
         let (x, y) = delta;
-        let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
-        let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
+        let xs = &(if x < 0 { LEFTS } else { RIGHTS })[0..(x.abs() as usize)];
+        let ys = &(if y < 0 { UPS } else { DOWNS })[0..(y.abs() as usize)];
 
         let mut me = Vec::new();
 
@@ -204,10 +204,10 @@ fn plan_rec(
         arrowpad
     };
 
-    let A_pos = pad[b'A' as usize];
+    let a_pos = pad[b'A' as usize];
     let empty = pad[b'_' as usize];
 
-    let mut curr = A_pos;
+    let mut curr = a_pos;
     let mut curr_b = b'A';
     let mut out = 0;
     for &b in target.iter() {
@@ -227,8 +227,8 @@ fn plan_rec(
         let x_first = direction_xy(&curr, &c, &empty);
 
         let (x, y) = delta;
-        let xs = &(if x < 0 { lefts } else { rights })[0..(x.abs() as usize)];
-        let ys = &(if y < 0 { ups } else { downs })[0..(y.abs() as usize)];
+        let xs = &(if x < 0 { LEFTS } else { RIGHTS })[0..(x.abs() as usize)];
+        let ys = &(if y < 0 { UPS } else { DOWNS })[0..(y.abs() as usize)];
 
         let mut me = Vec::new();
 
@@ -377,6 +377,7 @@ mod test {
     }
 
     #[test]
+    #[allow(non_snake_case)]
     fn type_029A() {
         let m = parse_map(NUMPAD);
         let p = plan("029A".as_bytes(), &m);
@@ -384,6 +385,7 @@ mod test {
     }
 
     #[test]
+    #[allow(non_snake_case)]
     fn direct_029A_1() {
         let n = parse_map(NUMPAD);
         let a = parse_map(ARROWS);

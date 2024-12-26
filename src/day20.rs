@@ -1,7 +1,4 @@
-use std::{
-    collections::{BinaryHeap, HashMap},
-    ops::RangeBounds,
-};
+use std::collections::{BinaryHeap, HashMap};
 
 use crate::{intmap::IntMap, Day};
 
@@ -217,7 +214,7 @@ impl Day<i64> for Day20 {
         results
             .iter()
             .filter(|(&k, _)| k >= 100)
-            .map(|(k, &v)| v as i64)
+            .map(|(_k, &v)| v as i64)
             .sum::<i64>()
     }
 
