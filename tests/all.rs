@@ -48,7 +48,7 @@ check!(day21, Day21, 184718, 228800606998554);
 check!(day22, Day22, 15335183969, 1696);
 
 check!(day24, Day24, "51837135476040", "0");
-// check!(day25, Day25, -1, -1);
+check!(day25, Day25, 3483, -1);
 
 //-- Car races, collisions and cheats
 //-- I'm just not getting the right answer
