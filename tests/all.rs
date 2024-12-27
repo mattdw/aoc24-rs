@@ -44,18 +44,14 @@ check!(day19, Day19, 290, 712058625427487_i64);
 // Day 20 was frustratingly specified and took way too long
 check!(day20, Day20, 1406, 1006101);
 check!(day21, Day21, 184718, 228800606998554_i64);
-
 // part 2 runs in > .3s
 check!(day22, Day22, 15335183969_i64, 1696);
+check!(
+    day23,
+    Day23,
+    "1476",
+    "ca,dw,fo,if,ji,kg,ks,oe,ov,sb,ud,vr,xr"
+);
 
 check!(day24, Day24, 51837135476040_i64, "_");
-check!(day25, Day25, 3483, -1);
-
-//-- Car races, collisions and cheats
-//-- I'm just not getting the right answer
-
-// Recursive keypads - can't see how to restructure
-// as recursive algo that deals with lengths rather than strings?
-
-// -- LAN Party, filled mem doing graph clustering a naive way
-// check!(day23, Day23, "1476", "-1");
+// check!(day25, Day25, 3483, -1);

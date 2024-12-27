@@ -9,7 +9,7 @@ pub struct Day23 {
     connections: HashMap<Name, HashSet<Name>>,
 }
 
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, Debug)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
 struct Name([u8; 2]);
 
 impl Display for Name {
@@ -18,6 +18,12 @@ impl Display for Name {
         f.write_char(self.0[1] as char)?;
 
         Ok(())
+    }
+}
+
+impl std::fmt::Debug for Name {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self, f)
     }
 }
 
@@ -77,56 +83,108 @@ impl Day23 {
         out
     }
 
-    fn all_subsets(item: &Vec<Name>) -> Vec<Vec<Name>> {
-        let mut subs = vec![];
-        if item.len() < 4 {
-            return vec![];
+    fn output(i: &HashSet<Name>) -> String {
+        let mut names = i.iter().map(|v| v.to_string()).collect::<Vec<_>>();
+
+        names.sort();
+
+        names.join(",")
+    }
+
+    fn bron_kerbosch_inner(
+        cnx: &HashMap<Name, HashSet<Name>>,
+        p: &mut HashSet<Name>,
+        r: &mut HashSet<Name>,
+        x: &mut HashSet<Name>,
+    ) -> HashSet<String> {
+        let mut outs = HashSet::<String>::new();
+
+        // eprintln!("sizes: {} {} {}", p.len(), r.len(), x.len());
+
+        if p.is_empty() && x.is_empty() {
+            outs.insert(Self::output(r));
+            return outs;
         }
 
-        for i in 0..item.len() {
-            let sub = [&item[0..i], &item[i + 1..]].concat();
-            subs.extend(Self::all_subsets(&sub));
-            subs.push(sub);
+        // if r.len() > 2 {
+        //     outs.insert(Self::output(r));
+        // }
+
+        while !p.is_empty() {
+            let v = { p.iter().next().unwrap().clone() };
+            let mut r2 = r.clone();
+            r2.insert(v);
+
+            let mut p2 = p.intersection(&cnx[&v]).cloned().collect::<HashSet<_>>();
+            let mut x2 = x.intersection(&cnx[&v]).cloned().collect::<HashSet<_>>();
+
+            outs.extend(Self::bron_kerbosch_inner(cnx, &mut p2, &mut r2, &mut x2));
+
+            p.remove(&v);
+            x.insert(v);
         }
-        subs
+
+        outs
     }
+
+    fn bron_kerbosch(cnx: &HashMap<Name, HashSet<Name>>) -> HashSet<String> {
+        let mut p = HashSet::from_iter(cnx.keys().cloned());
+        let mut r = HashSet::<Name>::new();
+        let mut x = HashSet::<Name>::new();
+
+        dbg!(Self::bron_kerbosch_inner(cnx, &mut p, &mut r, &mut x))
+    }
+
+    // fn all_subsets(item: &Vec<Name>) -> Vec<Vec<Name>> {
+    //     let mut subs = vec![];
+    //     if item.len() < 4 {
+    //         return vec![];
+    //     }
+
+    //     for i in 0..item.len() {
+    //         let sub = [&item[0..i], &item[i + 1..]].concat();
+    //         subs.extend(Self::all_subsets(&sub));
+    //         subs.push(sub);
+    //     }
+    //     subs
+    // }
 
     // this works but uses all my memory
-    fn find_clusters(d: &Day23) -> Vec<Vec<Name>> {
-        let sets_of_outgoing = d.connections.iter().map(|(k, v)| {
-            let mut v = v.clone();
-            v.insert(*k);
+    // fn find_clusters(d: &Day23) -> Vec<Vec<Name>> {
+    //     let sets_of_outgoing = d.connections.iter().map(|(k, v)| {
+    //         let mut v = v.clone();
+    //         v.insert(*k);
 
-            let mut v2 = Vec::from_iter(v.iter().copied());
-            v2.sort();
+    //         let mut v2 = Vec::from_iter(v.iter().copied());
+    //         v2.sort();
 
-            v2
-        });
+    //         v2
+    //     });
 
-        let groups: Vec<_> = sets_of_outgoing
-            .fold(HashMap::<Vec<Name>, usize>::new(), |mut acc, item| {
-                // acc.insert(item);
-                *acc.entry(item.clone()).or_default() += 1;
-                for item in Self::all_subsets(&item) {
-                    let mut l = item.len();
-                    let e = acc.entry(item.clone()).or_default();
-                    *e += 1;
-                    if e > &mut l {
-                        acc.remove(&item);
-                    }
-                }
+    //     let groups: Vec<_> = sets_of_outgoing
+    //         .fold(HashMap::<Vec<Name>, usize>::new(), |mut acc, item| {
+    //             // acc.insert(item);
+    //             *acc.entry(item.clone()).or_default() += 1;
+    //             for item in Self::all_subsets(&item) {
+    //                 let mut l = item.len();
+    //                 let e = acc.entry(item.clone()).or_default();
+    //                 *e += 1;
+    //                 if e > &mut l {
+    //                     acc.remove(&item);
+    //                 }
+    //             }
 
-                acc
-            })
-            .iter()
-            // this is the magic - as many members in the set as
-            // seen this particular set
-            .filter(|(s, c)| s.len() == **c)
-            .map(|s| s.0.clone())
-            .collect();
+    //             acc
+    //         })
+    //         .iter()
+    //         // this is the magic - as many members in the set as
+    //         // seen this particular set
+    //         .filter(|(s, c)| s.len() == **c)
+    //         .map(|s| s.0.clone())
+    //         .collect();
 
-        groups
-    }
+    //     groups
+    // }
 }
 
 impl Day<String> for Day23 {
@@ -144,14 +202,11 @@ impl Day<String> for Day23 {
 
     fn part2(input: &str) -> String {
         let d = Day23::parse(input);
-        let cs = Day23::find_clusters(&d);
-
-        let res = cs.iter().max_by_key(|v| v.len()).unwrap();
-
-        res.iter()
-            .map(|v| format!("{}", v))
-            .collect::<Vec<_>>()
-            .join("")
+        Day23::bron_kerbosch(&d.connections)
+            .iter()
+            .max_by_key(|v| v.len())
+            .unwrap()
+            .clone()
     }
 }
 
@@ -199,26 +254,38 @@ mod test {
         assert_eq!(12, Day23::find_threes(&Day23::parse(TEST_INPUT), 3).len());
     }
 
-    #[test]
-    fn clusters() {
-        let d = Day23::parse(TEST_INPUT);
-        let cs = Day23::find_clusters(&d);
+    // #[test]
+    // fn triples2() {
+    //     let d = Day23::parse(TEST_INPUT);
+    //     assert_eq!(
+    //         12,
+    //         Day23::bron_kerbosch(&d.connections)
+    //             .iter()
+    //             .filter(|v| v.len() == 3 * 2)
+    //             .count()
+    //     );
+    // }
 
-        for cl in &cs {
-            for n in cl {
-                println!("{}", n);
-            }
-            println!("");
-        }
+    // #[test]
+    // fn clusters() {
+    //     let d = Day23::parse(TEST_INPUT);
+    //     let cs = Day23::find_clusters(&d);
 
-        let res = cs.iter().max_by_key(|v| v.len()).unwrap();
-        assert_eq!(4, res.len());
-        assert_eq!(
-            "codekata",
-            res.iter()
-                .map(|v| format!("{}", v))
-                .collect::<Vec<_>>()
-                .join("")
-        );
-    }
+    //     for cl in &cs {
+    //         for n in cl {
+    //             println!("{}", n);
+    //         }
+    //         println!("");
+    //     }
+
+    //     let res = cs.iter().max_by_key(|v| v.len()).unwrap();
+    //     assert_eq!(4, res.len());
+    //     assert_eq!(
+    //         "codekata",
+    //         res.iter()
+    //             .map(|v| format!("{}", v))
+    //             .collect::<Vec<_>>()
+    //             .join("")
+    //     );
+    // }
 }
