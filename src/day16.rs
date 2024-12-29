@@ -100,6 +100,15 @@ fn dijkstra(
             break;
         }
 
+        // manhattan should be an appropriate minimum cost
+        let mut cost_est = manhattan(&pos, &end) as i32;
+        if pos.0 != end.0 && pos.1 != end.1 {
+            cost_est += 1000;
+        }
+        if cost_est > best_cost {
+            continue;
+        }
+
         if let Some(&val) = seen.get(&(pos, dir)) {
             if cost > val || first_only {
                 continue;
@@ -110,12 +119,6 @@ fn dijkstra(
         seen.entry((pos, dir))
             .and_modify(|v| *v = (*v).min(cost))
             .or_insert(cost);
-
-        // manhattan should be an appropriate minimum cost
-        let mhtn = manhattan(&pos, &end) as i32;
-        if cost + mhtn > best_cost {
-            continue;
-        }
 
         let mut route = route;
         route.insert((pos.0 as u8, pos.1 as u8));
