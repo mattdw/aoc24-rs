@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Write,
+};
 
 use crate::Day;
 use regex::Regex;
@@ -15,6 +18,27 @@ enum Node {
     XOR(Name, Name),
     OR(Name, Name),
     AND(Name, Name),
+}
+
+fn first(s: &str) -> char {
+    s.chars().next().unwrap_or('?')
+}
+
+impl std::fmt::Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Node::Const(v) => f.write_str(if *v { "T" } else { "F" }),
+            Node::XOR(l, r) => {
+                write!(f, "^",)
+            }
+            Node::OR(l, r) => {
+                write!(f, "|")
+            }
+            Node::AND(l, r) => {
+                write!(f, "&")
+            }
+        }
+    }
 }
 
 pub struct Day24 {
@@ -71,19 +95,19 @@ impl Day24 {
         }
     }
 
-    fn eval(&mut self, name: &str) -> (bool, HashSet<Name>) {
+    fn eval(&self, name: &str) -> (bool, Vec<(Name, Node)>) {
         let node = self.table.get(name).unwrap().clone();
 
         match node.clone() {
-            Node::Const(tf) => (tf, HashSet::from_iter([])),
+            Node::Const(tf) => (tf, vec![]),
             Node::XOR(l, r) | Node::AND(l, r) | Node::OR(l, r) => {
                 let (lres, lcontrib) = self.eval(&l);
                 let (rres, rcontrib) = self.eval(&r);
 
                 let res = Self::combine(node.clone(), lres, rres);
 
-                let mut contribs = HashSet::new();
-                contribs.insert(name.to_string());
+                let mut contribs = Vec::new();
+                contribs.push((name.to_string(), node));
                 contribs.extend(lcontrib);
                 contribs.extend(rcontrib);
                 (res, contribs)
@@ -91,7 +115,7 @@ impl Day24 {
         }
     }
 
-    fn evaluate(&mut self) -> usize {
+    fn evaluate(&self) -> usize {
         let mut res = 0;
         for digit in 0..=self.zmax {
             let name = format!("z{:02}", self.zmax - digit);
@@ -107,7 +131,7 @@ impl Day24 {
         res
     }
 
-    fn evaluate_trace(&mut self) -> (u64, Vec<HashSet<Name>>) {
+    fn evaluate_trace(&self) -> (u64, Vec<Vec<(Name, Node)>>) {
         let mut res = 0;
         let mut traces = vec![];
         for digit in 0..=self.zmax {
@@ -124,11 +148,21 @@ impl Day24 {
 
         (res, traces)
     }
+
+    fn visualise(&self) -> Vec<String> {
+        let traces = Vec::<String>::new();
+        for digit in 0..=self.zmax {
+            let name = format!("z{:02}", self.zmax - digit);
+            let (digit, trace) = self.eval(&name);
+        }
+
+        traces
+    }
 }
 
 impl Day<String> for Day24 {
     fn part1(input: &str) -> String {
-        let mut d = Day24::parse(input);
+        let d = Day24::parse(input);
 
         let out = d.evaluate();
 
@@ -137,6 +171,15 @@ impl Day<String> for Day24 {
 
     fn part2(input: &str) -> String {
         let mut d = Day24::parse(input);
+
+        // let z14 = d.table.get("z14").unwrap().clone();
+        // let z22 = d.table.get("z22").unwrap().clone();
+        // let z31 = d.table.get("z31").unwrap().clone();
+        // let z35 = d.table.get("z35").unwrap().clone();
+        // d.table.insert("z14".to_owned(), z31);
+        // d.table.insert("z22".to_owned(), z14);
+        // d.table.insert("z31".to_owned(), z35);
+        // d.table.insert("z35".to_owned(), z22);
 
         let xnames = (0..=44).map(|i| format!("x{i:02}")).collect::<Vec<_>>();
         let ynames = (0..=44).map(|i| format!("y{i:02}")).collect::<Vec<_>>();
@@ -162,16 +205,17 @@ impl Day<String> for Day24 {
             }
 
             let x = 1_u64 << z;
+            // let y = 1_u64 << z;
             let y = 1_u64 << z;
             let expected = x + y;
 
             let (d, trace) = d.evaluate_trace();
-            println!("{z}: {x} + {y} = {expected} / got {d}");
+            println!("{z}: {expected} / got {d} = {x} + {y} ");
 
             if expected == d {
-                good_gates.extend(trace[z].clone());
+                good_gates.extend(trace[z].iter().map(|(n, _)| n.clone()));
             } else {
-                let set = trace[z].clone();
+                let set = trace[z].iter().map(|(n, _)| n.clone()).collect();
                 bad_gates.push(set);
             }
         }
@@ -196,11 +240,32 @@ impl Day<String> for Day24 {
         // }
 
         "-".to_string()
+
+        /*
+
+            from visual inspections
+            Z10
+            Z14
+            Z31
+
+            from 1-bit test
+            13/14
+            30
+            34
+            35
+
+            14
+            22
+            31
+            35
+        */
     }
 }
 
 #[cfg(test)]
 mod test {
+    use crate::fetch_input;
+
     use super::*;
 
     const TEST_INPUT: &'static str = "
@@ -274,5 +339,22 @@ tnw OR pbm -> gnj
 
         assert_eq!("11111101000", &outs);
         assert_eq!(2024, usize::from_str_radix(&outs, 2).unwrap());
+    }
+
+    #[test]
+    fn vis() {
+        let mut d = Day24::parse(&fetch_input(24).unwrap());
+
+        let (out, traces) = d.evaluate_trace();
+
+        for (idx, t) in traces.iter().enumerate() {
+            println!(
+                "{idx} {}",
+                &t.iter()
+                    .map(|(a, b)| format!("{}", b.to_string()))
+                    .collect::<Vec<String>>()
+                    .join("")
+            )
+        }
     }
 }
